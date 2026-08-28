@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f4f4f3">
+  <title>VEX训练数据管理 · 界面预览</title>
+  <style>
+    :root{
+      --canvas:oklch(0.965 0 0);--surface:oklch(0.995 0 0);--muted:oklch(0.94 0 0);
+      --ink:oklch(0.16 0 0);--ink-2:oklch(0.43 0 0);--ink-3:oklch(0.59 0 0);
+      --line:oklch(0.88 0 0);--green:oklch(0.66 .17 145);--blue:oklch(0.60 .16 250);
+      --danger:oklch(0.60 .22 25);--radius:14px;--nav-h:74px;
+    }
+    *{box-sizing:border-box}
+    html{font-family:Inter,"SF Pro Text","PingFang SC",system-ui,sans-serif;color:var(--ink);background:var(--canvas);-webkit-font-smoothing:antialiased}
+    body{margin:0;min-height:100vh;background:var(--canvas)}
+    button,input{font:inherit}
+    button{color:inherit}
+    .app{width:min(100%,1120px);margin:auto;min-height:100vh;background:var(--canvas)}
+    .topbar{height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:20;background:color-mix(in oklch,var(--canvas) 92%,transparent);backdrop-filter:blur(16px);border-bottom:1px solid color-mix(in oklch,var(--line) 75%,transparent)}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:760;letter-spacing:-.025em}
+    .brand-mark{width:30px;height:30px;border-radius:9px;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:12px;box-shadow:0 5px 8px rgba(0,0,0,.16)}
+    .profile{border:0;background:transparent;display:flex;align-items:center;gap:8px;padding:6px;cursor:pointer}
+    .avatar{width:32px;height:32px;border-radius:50%;background:#d7d7d5;display:grid;place-items:center;font-weight:700;font-size:12px}
+    .sync{font-size:12px;color:var(--ink-2);display:flex;align-items:center;gap:5px}
+    .sync::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green)}
+    main{padding:22px 16px calc(var(--nav-h) + 24px)}
+    .view{display:none}.view.active{display:block}
+    .eyebrow{font-size:12px;color:var(--ink-3);margin:0 0 9px}
+    h1{font-size:28px;line-height:1.08;letter-spacing:-.035em;margin:0;text-wrap:balance}
+    h2{font-size:17px;letter-spacing:-.02em;margin:0}
+    p{margin:0}
+    .intro{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:26px}
+    .date-block{text-align:right;color:var(--ink-3);font-size:12px;line-height:1.45;white-space:nowrap}
+    .primary{border:0;border-radius:999px;background:var(--ink);color:white;min-height:46px;padding:0 18px;font-weight:700;cursor:pointer;box-shadow:0 6px 8px rgba(0,0,0,.18)}
+    .primary:active{transform:translateY(1px)}
+    .secondary{border:1px solid var(--line);border-radius:999px;background:var(--surface);min-height:44px;padding:0 16px;font-weight:650;cursor:pointer}
+    .section-head{display:flex;align-items:center;justify-content:space-between;margin:24px 0 12px}
+    .section-head button{border:0;background:none;color:var(--ink-2);font-size:13px;cursor:pointer}
+    .hero-action{background:var(--surface);border-radius:var(--radius);padding:20px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;box-shadow:0 5px 8px rgba(0,0,0,.07)}
+    .hero-action h2{font-size:20px;margin-bottom:7px}.hero-action p{font-size:13px;color:var(--ink-2);line-height:1.55}
+    .start{width:52px;height:52px;padding:0;border-radius:50%;font-size:22px}
+    .metrics{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:24px 0}
+    .metric{padding:18px 10px;text-align:center}.metric+.metric{border-left:1px solid var(--line)}
+    .metric strong{display:block;font-size:24px;letter-spacing:-.04em;font-variant-numeric:tabular-nums}.metric span{font-size:11px;color:var(--ink-3)}
+    .team-list,.student-list,.history-list{display:flex;flex-direction:column;gap:8px}
+    .team-row,.history-row{border:0;background:var(--surface);border-radius:12px;padding:15px 14px;display:flex;align-items:center;gap:12px;text-align:left;width:100%;cursor:pointer}
+    .team-badge{width:42px;height:42px;border-radius:12px;background:var(--muted);display:grid;place-items:center;font-size:11px;font-weight:800}
+    .team-meta{flex:1;min-width:0}.team-meta strong{display:block;font-size:15px}.team-meta span{display:block;color:var(--ink-3);font-size:12px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pill{font-size:11px;border-radius:999px;padding:5px 8px;background:var(--muted);color:var(--ink-2)}
+    .pill.live{background:color-mix(in oklch,var(--green) 15%,white);color:oklch(.42 .14 145)}
+    .form-shell{background:var(--surface);border-radius:var(--radius);overflow:hidden;margin-top:18px}
+    .form-line{padding:14px 16px;display:flex;align-items:center;gap:14px;min-height:54px}.form-line+.form-line{border-top:1px solid var(--line)}
+    .form-label{font-size:13px;color:var(--ink-2);width:58px}.form-value{flex:1;font-size:14px;font-weight:600;border:0;background:transparent;outline:0;min-width:0}.chev{color:var(--ink-3)}
+    .mode-switch{display:flex;background:var(--muted);border-radius:10px;padding:3px;margin:18px 0}
+    .mode-switch button{flex:1;border:0;background:transparent;border-radius:8px;min-height:38px;font-weight:650;color:var(--ink-2);cursor:pointer}
+    .mode-switch button.active{background:var(--surface);color:var(--ink);box-shadow:0 2px 5px rgba(0,0,0,.08)}
+    .mode-help{font-size:12px;line-height:1.55;color:var(--ink-2);margin:-8px 2px 16px}
+    [hidden]{display:none!important}
+    .timer-controls{display:flex;gap:8px;margin-top:12px}.timer-controls button{flex:1}
+    .active-student{display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface);border-radius:12px;margin-bottom:10px}
+    .active-student .team-meta{flex:1}.active-student .pill{white-space:nowrap}
+    .result-summary{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border-radius:12px;margin-top:10px;font-size:13px}
+    .result-summary strong{font-size:20px;font-variant-numeric:tabular-nums}
+    .report-controls{background:var(--surface);border-radius:var(--radius);padding:14px;margin-bottom:18px}
+    .report-select{width:100%;height:44px;border:1px solid var(--line);border-radius:10px;background:white;padding:0 12px;font:inherit;font-weight:650;color:var(--ink);outline:none}
+    .report-select+.report-select{margin-top:8px}
+    .chart{height:220px;background:var(--surface);border-radius:var(--radius);padding:18px 14px 14px;display:flex;align-items:flex-end;gap:8px;position:relative;margin-top:12px}
+    .chart::before,.chart::after{content:"";position:absolute;left:14px;right:14px;border-top:1px solid var(--line)}
+    .chart::before{top:34%}.chart::after{top:66%}
+    .bar-item{height:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;z-index:1;min-width:0}
+    .bar-value{font-size:10px;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums}
+    .bar{width:min(30px,72%);height:var(--h);background:var(--ink);border-radius:5px 5px 2px 2px;min-height:5px}
+    .bar.best{background:var(--green)}
+    .bar-label{font-size:9px;color:var(--ink-3);white-space:nowrap}
+    .report-note{font-size:12px;color:var(--ink-2);line-height:1.65;padding:14px 2px}
+    dialog{border:0;padding:0;border-radius:16px;width:min(calc(100% - 28px),460px);max-height:82vh;background:var(--surface);color:var(--ink);box-shadow:0 18px 36px rgba(0,0,0,.22)}
+    dialog::backdrop{background:rgba(0,0,0,.35);backdrop-filter:blur(5px)}
+    .dialog-body{padding:20px}.dialog-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.dialog-head h2{font-size:19px}.icon-button{width:40px;height:40px;border:0;border-radius:50%;background:var(--muted);cursor:pointer;font-size:20px}
+    .dialog-actions{display:flex;gap:8px;margin-top:18px}.dialog-actions button{flex:1}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .member-list{display:flex;flex-direction:column;gap:7px;max-height:280px;overflow:auto;margin:12px 0}.member-row{display:flex;align-items:center;gap:10px;padding:11px;background:var(--muted);border-radius:10px}.member-row strong{font-size:14px}.member-row span{font-size:11px;color:var(--ink-3)}
+    .admin-panel{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}.admin-panel h3{font-size:15px;margin-bottom:10px}.member-row .remove-access{margin-left:auto;border:0;background:transparent;color:var(--danger);font-size:12px;cursor:pointer;padding:7px}
+    .student-card{background:var(--surface);border-radius:12px;padding:14px;display:grid;grid-template-columns:38px 1fr 92px;align-items:center;gap:10px}
+    .student-index{width:34px;height:34px;border-radius:50%;background:var(--muted);display:grid;place-items:center;font-size:12px;color:var(--ink-2)}
+    .student-name strong{display:block;font-size:14px}.student-name span{font-size:11px;color:var(--ink-3)}
+    .score-input{height:42px;border:1px solid var(--line);border-radius:10px;text-align:center;width:100%;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;background:white;outline:none}
+    .score-input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.08)}
+    .sticky-actions{position:sticky;bottom:calc(var(--nav-h) + 10px);display:flex;gap:8px;margin-top:16px;padding:8px;background:color-mix(in oklch,var(--surface) 88%,transparent);backdrop-filter:blur(14px);border-radius:16px;box-shadow:0 5px 12px rgba(0,0,0,.12)}
+    .sticky-actions button{flex:1}
+    .timer{height:164px;border-radius:var(--radius);background:var(--ink);color:#fff;display:grid;place-items:center;text-align:center;margin:18px 0}
+    .timer-time{font-size:48px;font-weight:720;letter-spacing:-.05em;font-variant-numeric:tabular-nums}.timer p{font-size:12px;color:#aaa;margin-top:5px}
+    .history-row{cursor:default}.history-time{font-size:19px;font-weight:720;font-variant-numeric:tabular-nums}.history-row time{font-size:11px;color:var(--ink-3)}
+    .history-row[data-record-id]{cursor:pointer}.history-row[data-record-id]:hover{background:#fafafa}
+    .empty-space{height:20px}
+    .bottom-nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,1120px);height:var(--nav-h);display:grid;grid-template-columns:repeat(4,1fr);padding:7px 8px calc(7px + env(safe-area-inset-bottom));background:color-mix(in oklch,var(--surface) 94%,transparent);backdrop-filter:blur(18px);border-top:1px solid var(--line);z-index:30}
+    .bottom-nav[data-role="viewer"]{grid-template-columns:repeat(2,1fr)}
+    .nav-btn{border:0;background:transparent;color:var(--ink-3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;cursor:pointer;border-radius:10px}.nav-btn svg{width:20px;height:20px;stroke-width:1.8}.nav-btn.active{color:var(--ink);background:var(--muted)}
+    .toast{position:fixed;left:50%;bottom:92px;transform:translate(-50%,20px);background:var(--ink);color:#fff;border-radius:999px;padding:11px 16px;font-size:13px;opacity:0;pointer-events:none;transition:.2s ease;z-index:50;white-space:nowrap}.toast.show{opacity:1;transform:translate(-50%,0)}
+    .auth-screen{position:fixed;inset:0;z-index:100;background:var(--canvas);display:grid;place-items:center;padding:20px}
+    .auth-screen[hidden]{display:none}
+    .auth-box{width:min(100%,390px);background:var(--surface);border-radius:16px;padding:26px 22px;box-shadow:0 8px 14px rgba(0,0,0,.09)}
+    .auth-logo{width:42px;height:42px;border-radius:12px;background:var(--ink);color:white;display:grid;place-items:center;font-size:13px;font-weight:800;margin-bottom:28px}
+    .auth-box h1{font-size:25px;margin-bottom:8px}.auth-copy{color:var(--ink-2);font-size:13px;line-height:1.6;margin-bottom:24px}
+    .auth-field{display:block;margin-bottom:13px}.auth-field span{display:block;font-size:12px;color:var(--ink-2);margin:0 0 6px 2px}
+    .auth-field input{width:100%;height:48px;border:1px solid var(--line);border-radius:10px;background:white;padding:0 13px;outline:none}.auth-field input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.08)}
+    .auth-error{min-height:20px;font-size:12px;color:var(--danger);margin:4px 2px 8px}
+    .auth-submit{width:100%}.auth-foot{text-align:center;color:var(--ink-3);font-size:11px;margin-top:18px}
+    .auth-switch{display:block;margin:14px auto 0;border:0;background:transparent;color:var(--ink);font-size:12px;text-decoration:underline;cursor:pointer}
+    .app[hidden],.bottom-nav[hidden]{display:none}
+    @media(min-width:760px){
+      main{padding:36px 34px 110px}.topbar{padding:0 34px}.dashboard-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:24px}.dashboard-grid .metrics{grid-column:1/-1;margin:0}.bottom-nav{width:420px;bottom:18px;border:0;border-radius:16px;height:64px;box-shadow:0 8px 18px rgba(0,0,0,.13)}.sticky-actions{bottom:90px}.record-layout{display:grid;grid-template-columns:.82fr 1.18fr;gap:24px}.timer{margin-top:0}}
+    @media print{
+      @page{size:A4 portrait;margin:14mm}
+      body{background:#fff!important}.auth-screen,.topbar,.bottom-nav,.toast,.view:not([data-view="reports"]),[data-view="reports"] .report-controls,[data-view="reports"] .intro button,[data-view="reports"] .section-head button{display:none!important}
+      .app,.app main{display:block!important;max-width:none!important;padding:0!important}.view[data-view="reports"]{display:block!important}.intro{margin-bottom:18px}.hero-action,.metric,.chart,.history-row{break-inside:avoid;box-shadow:none!important;border:1px solid #ddd}.chart{height:230px}.report-note{font-size:11px}.pill{border:1px solid #ddd}
+    }
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <section class="auth-screen" id="auth-screen">
+    <form class="auth-box" id="login-form">
+      <div class="auth-logo">VX</div>
+      <h1>登录 VEX训练数据管理</h1>
+      <p class="auth-copy">使用管理员或教练账号进入。登录后只能查看被授权的赛队与训练数据。</p>
+      <label class="auth-field"><span>邮箱</span><input type="email" id="login-email" autocomplete="username" required placeholder="coach@example.com"></label>
+      <label class="auth-field"><span>密码</span><input type="password" id="login-password" autocomplete="current-password" required placeholder="请输入密码"></label>
+      <div class="auth-error" id="auth-error" role="alert"></div>
+      <button class="primary auth-submit" id="login-button" type="submit">登录</button>
+      <button class="auth-switch" id="show-forgot-button" type="button">忘记密码？</button>
+      <button class="auth-switch" id="show-register-button" type="button">没有账号？自行注册</button>
+      <p class="auth-foot">注册后由管理员分配可访问的赛队或学生</p>
+    </form>
+    <form class="auth-box" id="register-form" hidden>
+      <div class="auth-logo">VX</div>
+      <h1>注册新账号</h1>
+      <p class="auth-copy">注册不会自动获得数据权限，需等待管理员完成授权。</p>
+      <label class="auth-field"><span>姓名</span><input id="register-name" required autocomplete="name" placeholder="请输入真实姓名"></label>
+      <label class="auth-field"><span>身份</span><select class="report-select" id="register-role"><option value="coach">教练</option><option value="viewer">家长</option></select></label>
+      <label class="auth-field"><span>邮箱</span><input type="email" id="register-email" autocomplete="username" required placeholder="name@example.com"></label>
+      <label class="auth-field"><span>设置密码</span><input type="password" id="register-password" autocomplete="new-password" minlength="8" required placeholder="至少 8 位"></label>
+      <div class="auth-error" id="register-error" role="alert"></div>
+      <button class="primary auth-submit" id="register-button" type="submit">注册</button>
+      <button class="auth-switch" id="show-login-button" type="button">已有账号？返回登录</button>
+    </form>
+    <form class="auth-box" id="forgot-form" hidden>
+      <div class="auth-logo">VX</div><h1>找回密码</h1><p class="auth-copy">输入注册邮箱，我们会发送一封密码重置邮件。</p>
+      <label class="auth-field"><span>邮箱</span><input type="email" id="forgot-email" required autocomplete="email" placeholder="name@example.com"></label>
+      <div class="auth-error" id="forgot-error" role="alert"></div><button class="primary auth-submit" id="forgot-button" type="submit">发送重置邮件</button>
+      <button class="auth-switch" data-back-login type="button">返回登录</button>
+    </form>
+    <form class="auth-box" id="reset-form" hidden>
+      <div class="auth-logo">VX</div><h1>设置新密码</h1><p class="auth-copy">请输入新的登录密码，保存后即可继续使用。</p>
+      <label class="auth-field"><span>新密码</span><input type="password" id="reset-password" minlength="8" required autocomplete="new-password" placeholder="至少 8 位"></label>
+      <label class="auth-field"><span>再次输入</span><input type="password" id="reset-password-confirm" minlength="8" required autocomplete="new-password" placeholder="再次输入新密码"></label>
+      <div class="auth-error" id="reset-error" role="alert"></div><button class="primary auth-submit" id="reset-button" type="submit">保存新密码</button>
+    </form>
+  </section>
+  <div class="app" hidden>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">VX</span><span>VEX训练数据管理</span></div>
+      <button class="profile" id="profile-button" aria-label="退出登录"><span class="sync" id="user-role-label">已同步</span><span class="avatar" id="user-avatar">教</span></button>
+    </header>
+    <main>
+      <section class="view active" data-view="home">
+        <div class="intro"><div><p class="eyebrow" id="home-date">训练工作台</p><h1 id="home-greeting">你好</h1></div><div class="date-block" id="home-overview">— 支赛队<br>— 名队员</div></div>
+        <div class="dashboard-grid">
+          <div class="hero-action" id="training-start-card"><div><h2>开始今天的训练</h2><p>选择赛队和训练阶段，快速记录每位队员的数据。</p></div><button class="primary start" data-go="record" aria-label="开始训练">→</button></div>
+          <div>
+            <div class="section-head"><h2>我的赛队</h2><button>全部赛队</button></div>
+            <div class="team-list" id="home-team-list"><div class="member-row"><span>正在加载赛队…</span></div></div>
+          </div>
+          <div class="metrics"><div class="metric"><strong id="home-today-count">—</strong><span>今日记录</span></div><div class="metric"><strong id="home-student-count">—</strong><span>可见队员</span></div><div class="metric"><strong id="home-best-time">—</strong><span>最佳用时</span></div></div>
+        </div>
+        <div class="section-head"><h2>最近记录</h2><button>查看报告</button></div>
+        <div class="history-list" id="home-history-list"><div class="member-row"><span>暂无训练记录。</span></div></div>
+      </section>
+
+      <section class="view" data-view="record">
+        <div class="intro"><div><p class="eyebrow">快速录入</p><h1>新建训练记录</h1></div><span class="pill live">自动同步</span></div>
+        <div class="record-layout">
+          <div>
+            <div class="form-shell">
+              <label class="form-line"><span class="form-label">赛队</span><select class="form-value" id="training-team-select" aria-label="选择赛队"><option value="">请选择赛队</option></select><span class="chev">›</span></label>
+              <div class="form-line"><span class="form-label">阶段</span><input class="form-value" id="training-title-input" value="底盘操控测试" aria-label="训练阶段"></div>
+              <div class="form-line"><span class="form-label">内容</span><input class="form-value" id="training-content-input" placeholder="填写本次训练内容" autocomplete="off" aria-label="训练内容"></div>
+            </div>
+            <div class="mode-switch"><button class="active" data-training-mode="segment">分段训练</button><button data-training-mode="field">全场训练</button></div>
+            <p class="mode-help" id="mode-help">固定任务，记录每位学生完成任务所需的时间。</p>
+            <div class="training-panel" data-panel="segment">
+              <div class="active-student"><span class="student-index">01</span><span class="team-meta"><strong data-current-student="segment">请选择赛队</strong><span>分段计时任务</span></span><span class="pill" data-current-count="segment">0 / 0</span></div>
+              <div class="timer"><div><div class="timer-time" data-segment-time>00:00.0</div><p data-segment-label>准备开始</p></div></div>
+              <div class="timer-controls"><button class="secondary" data-timer-reset="segment">重置</button><button class="primary" data-timer-start="segment">开始计时</button></div>
+            </div>
+            <div class="training-panel" data-panel="field" hidden>
+              <div class="active-student"><span class="student-index">01</span><span class="team-meta"><strong data-current-student="field">请选择赛队</strong><span>全场综合任务</span></span><span class="pill" data-current-count="field">60 秒</span></div>
+              <div class="timer"><div><div class="timer-time" data-field-time>01:00</div><p data-field-label>倒计时准备</p></div></div>
+              <div class="timer-controls"><button class="secondary" data-timer-reset="field">重置</button><button class="primary" data-timer-start="field">开始 60 秒</button></div>
+            </div>
+          </div>
+          <div>
+            <div class="section-head"><h2 id="data-title">分段用时</h2><button>第 1 轮</button></div>
+            <div class="student-list" data-results="segment"><div class="member-row"><span>请先选择赛队。</span></div></div>
+            <div class="student-list" data-results="field" hidden><div class="member-row"><span>请先选择赛队。</span></div></div>
+            <div class="result-summary"><span id="summary-label">当前最佳用时</span><strong id="summary-value">—</strong></div>
+            <div class="sticky-actions"><button class="secondary" data-action="draft">暂存</button><button class="primary" data-action="save">保存本轮</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" data-view="teams">
+        <div class="intro"><div><p class="eyebrow">教练工作台</p><h1>我的赛队</h1></div><button class="primary" id="new-team-button">＋ 新建</button></div>
+        <div class="team-list" id="all-team-list"><div class="member-row"><span>正在加载赛队…</span></div></div>
+      </section>
+
+      <section class="view" data-view="reports">
+        <div class="intro"><div><p class="eyebrow">训练过程分析</p><h1>训练报告</h1></div><button class="primary" data-action="pdf">导出 PDF</button></div>
+        <div class="report-controls">
+          <div class="mode-switch" style="margin:0 0 10px"><button class="active" data-report-mode="team">整个赛队</button><button data-report-mode="student">单个学生</button></div>
+          <select class="report-select" id="report-team-select" aria-label="选择赛队"><option value="">请选择赛队</option></select>
+          <select class="report-select" id="report-student-select" data-student-select aria-label="选择学生" hidden><option value="">请选择学生</option></select>
+          <select class="report-select" id="report-type-select" aria-label="选择训练类型"><option value="timer">分段训练 · 计时</option><option value="score">全场训练 · 60秒计分</option></select>
+        </div>
+        <div class="hero-action"><div><h2 id="report-title">请选择赛队</h2><p id="report-description">选择赛队和训练类型后查看真实训练数据。</p></div><span class="pill live" id="report-trend">等待数据</span></div>
+        <div class="metrics"><div class="metric"><strong id="metric-best">—</strong><span id="metric-best-label">最快用时 / 秒</span></div><div class="metric"><strong id="metric-worst">—</strong><span id="metric-worst-label">最慢用时 / 秒</span></div><div class="metric"><strong id="metric-average">—</strong><span id="metric-average-label">平均用时 / 秒</span></div></div>
+        <div class="section-head"><h2>训练过程</h2><button>近14天</button></div>
+        <div class="chart" id="report-chart" aria-label="训练过程柱状图"><div class="member-row"><span>暂无训练数据。</span></div></div>
+        <p class="report-note" id="report-note">分段训练用时越短越好；全场训练得分越高越好。</p>
+        <div class="section-head"><h2 id="ranking-title">队员表现</h2><button>查看全部</button></div>
+        <div class="history-list" data-team-ranking><div class="member-row"><span>暂无队员训练数据。</span></div></div>
+      </section>
+    </main>
+  </div>
+  <nav class="bottom-nav" aria-label="主导航" hidden>
+    <button class="nav-btn active" data-nav="home" aria-label="首页"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 11.5 12 4l9 7.5V20H3z"/></svg><span>首页</span></button>
+    <button class="nav-btn" data-nav="record" aria-label="录入"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg><span>录入</span></button>
+    <button class="nav-btn" data-nav="teams" aria-label="赛队"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-4 2-6 5-6s5 2 5 6M14 15c3-1 6 1 6 5"/></svg><span>赛队</span></button>
+    <button class="nav-btn" data-nav="reports" aria-label="报告"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 20V10M12 20V4M19 20v-7"/></svg><span>报告</span></button>
+  </nav>
+  <div class="toast" role="status">已保存并同步</div>
+  <dialog id="team-dialog">
+    <form class="dialog-body" id="team-form">
+      <div class="dialog-head"><h2>创建赛队</h2><button type="button" class="icon-button" data-close-dialog="team-dialog" aria-label="关闭">×</button></div>
+      <label class="auth-field"><span>赛队编号</span><input id="team-number-input" required placeholder="例如 8009A"></label>
+      <div class="field-row">
+        <label class="auth-field"><span>赛队类型</span><select class="report-select" id="team-type-input"><option value="IQ">IQ</option><option value="GO">GO</option></select></label>
+        <label class="auth-field"><span>目标赛事</span><input id="team-target-input" placeholder="例如 华科大"></label>
+      </div>
+      <div class="auth-error" id="team-form-error"></div>
+      <div class="dialog-actions"><button type="button" class="secondary" data-close-dialog="team-dialog">取消</button><button class="primary" id="team-save-button" type="submit">创建赛队</button></div>
+    </form>
+  </dialog>
+  <dialog id="members-dialog">
+    <div class="dialog-body">
+      <div class="dialog-head"><div><p class="eyebrow">赛队成员</p><h2 id="members-title">队员管理</h2></div><button type="button" class="icon-button" data-close-dialog="members-dialog" aria-label="关闭">×</button></div>
+      <div class="member-list" id="member-list"></div>
+      <form id="member-form">
+        <input type="hidden" id="member-team-id">
+        <div class="field-row">
+          <label class="auth-field"><span>队员姓名</span><input id="member-name-input" required placeholder="姓名"></label>
+          <label class="auth-field"><span>角色</span><select class="report-select" id="member-role-input"><option>操作</option><option>编程</option><option>搭建</option></select></label>
+        </div>
+        <div class="auth-error" id="member-form-error"></div>
+        <div class="dialog-actions"><button type="button" class="secondary" data-close-dialog="members-dialog">完成</button><button class="primary" id="member-save-button" type="submit">添加队员</button></div>
+      </form>
+      <section class="admin-panel" id="coach-admin-panel" hidden>
+        <h3>负责教练</h3>
+        <div class="member-list" id="coach-list"></div>
+        <form id="coach-form">
+          <label class="auth-field"><span>选择已有账号</span><select class="report-select" id="coach-profile-select" required><option value="">请选择教练</option></select></label>
+          <div class="field-row">
+            <label class="auth-field"><span>权限</span><select class="report-select" id="coach-access-select"><option value="coach">可录入</option><option value="viewer">仅查看</option><option value="owner">负责人</option></select></label>
+            <button class="primary" id="coach-save-button" type="submit">分配教练</button>
+          </div>
+          <div class="auth-error" id="coach-form-error"></div>
+        </form>
+      </section>
+      <section class="admin-panel" id="team-danger-panel" hidden>
+        <h3>赛队管理</h3>
+        <button type="button" class="secondary" id="team-delete-button" style="width:100%;color:var(--danger)">删除这个赛队</button>
+      </section>
+    </div>
+  </dialog>
+  <dialog id="record-dialog">
+    <form class="dialog-body" id="record-form">
+      <div class="dialog-head"><div><p class="eyebrow">训练记录</p><h2 id="record-dialog-title">修改记录</h2></div><button type="button" class="icon-button" data-close-dialog="record-dialog" aria-label="关闭">×</button></div>
+      <input type="hidden" id="record-id-input">
+      <label class="auth-field"><span id="record-value-label">记录数值</span><input type="number" min="0" step="0.1" id="record-value-input" required></label>
+      <label class="auth-field"><span>备注</span><input id="record-notes-input" placeholder="选填：说明修改原因"></label>
+      <div class="auth-error" id="record-form-error"></div>
+      <div class="dialog-actions"><button type="button" class="secondary" id="record-delete-button">删除记录</button><button class="primary" id="record-save-button" type="submit">保存修改</button></div>
+    </form>
+  </dialog>
+  <script src="config.js"></script>
+  <script>
+    const SUPABASE_URL=window.VEX_CONFIG?.supabaseUrl||'';
+    const SUPABASE_KEY=window.VEX_CONFIG?.supabasePublishableKey||'';
+    if(!SUPABASE_URL||!SUPABASE_KEY){
+      document.addEventListener('DOMContentLoaded',()=>{
+        const error=document.querySelector('#auth-error');
+        if(error) error.textContent='尚未配置 Supabase。请复制 config.example.js 为 config.js，并填写项目连接信息。';
+      });
+    }
+    const SESSION_KEY='vex_auth_session';
+    let authSession=null,currentProfile=null,liveTeams=[],allProfiles=[],activeMembersTeamId='',dashboardRecords=[];
+    const authScreen=document.querySelector('#auth-screen'),appShell=document.querySelector('.app'),bottomNav=document.querySelector('.bottom-nav');
+    async function sbFetch(path,{method='GET',body,token=authSession?.access_token,headers={}}={}){
+      const response=await fetch(SUPABASE_URL+path,{method,headers:{apikey:SUPABASE_KEY,Authorization:token?'Bearer '+token:'Bearer '+SUPABASE_KEY,'Content-Type':'application/json',...headers},body:body===undefined?undefined:JSON.stringify(body)});
+      const text=await response.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}
+      if(!response.ok)throw new Error(data?.msg||data?.message||data?.error_description||'请求失败');
+      return data;
+    }
+    function setSignedIn(signedIn){authScreen.hidden=signedIn;appShell.hidden=!signedIn;bottomNav.hidden=!signedIn}
+    function saveSession(session){authSession=session;localStorage.setItem(SESSION_KEY,JSON.stringify(session))}
+    function clearSession(){authSession=null;currentProfile=null;liveTeams=[];localStorage.removeItem(SESSION_KEY);setSignedIn(false)}
+    async function loadCurrentUser(){
+      const user=await sbFetch('/auth/v1/user');
+      const profiles=await sbFetch('/rest/v1/profiles?id=eq.'+encodeURIComponent(user.id)+'&select=id,display_name,role,is_active');
+      if(!profiles?.[0]?.is_active)throw new Error('账号未启用，请联系管理员');
+      currentProfile=profiles[0];
+      document.querySelector('#user-avatar').textContent=(currentProfile.display_name||'教').slice(0,1);
+      document.querySelector('#new-team-button').hidden=currentProfile.role!=='admin';document.querySelector('#coach-admin-panel').hidden=currentProfile.role!=='admin';document.querySelector('#team-danger-panel').hidden=currentProfile.role!=='admin';
+      const viewer=currentProfile.role==='viewer';document.querySelector('#user-role-label').textContent=viewer?'家长 · 仅查看':'已同步';bottomNav.dataset.role=viewer?'viewer':currentProfile.role;document.querySelector('[data-nav="record"]').hidden=viewer;document.querySelector('[data-nav="teams"]').hidden=viewer;document.querySelector('#training-start-card').hidden=viewer;document.querySelector('#member-form').hidden=viewer;
+      return user;
+    }
+    function renderLiveTeams(){
+      const empty='<div class="team-row"><span class="team-meta"><strong>暂无授权赛队</strong><span>请由管理员创建赛队并分配教练</span></span></div>';
+      const markup=liveTeams.length?liveTeams.map(team=>'<button class="team-row" data-live-team="'+team.id+'"><span class="team-badge">'+team.type+'</span><span class="team-meta"><strong>'+escapeHtml(team.number)+'</strong><span>'+(team.target_event?escapeHtml(team.target_event)+' · ':'')+'已启用</span></span><span class="chev">›</span></button>').join(''):empty;
+      document.querySelector('#home-team-list').innerHTML=markup;
+      document.querySelector('#all-team-list').innerHTML=markup;
+      document.querySelectorAll('[data-live-team]').forEach(button=>button.addEventListener('click',()=>openMembers(button.dataset.liveTeam)));
+    }
+    function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+    async function loadTeams(){
+      liveTeams=await sbFetch('/rest/v1/teams_v2?deleted_at=is.null&is_active=eq.true&select=id,number,type,target_event&order=number.asc');renderLiveTeams();
+      const select=document.querySelector('#training-team-select'),selected=select.value;
+      select.innerHTML='<option value="">请选择赛队</option>'+liveTeams.map(team=>'<option value="'+team.id+'">'+escapeHtml(team.number)+' · '+escapeHtml(team.type)+'</option>').join('');
+      if(liveTeams.some(team=>team.id===selected))select.value=selected;
+      const reportSelect=document.querySelector('#report-team-select'),reportSelected=reportSelect.value;
+      reportSelect.innerHTML='<option value="">请选择赛队</option>'+liveTeams.map(team=>'<option value="'+team.id+'">'+escapeHtml(team.number)+' · '+escapeHtml(team.type)+'</option>').join('');
+      if(liveTeams.some(team=>team.id===reportSelected))reportSelect.value=reportSelected;
+      await loadDashboard();
+    }
+    async function loadDashboard(){
+      const now=new Date(),weekday=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][now.getDay()];document.querySelector('#home-date').textContent=weekday+' · '+(now.getMonth()+1)+'月'+now.getDate()+'日';document.querySelector('#home-greeting').textContent='你好，'+(currentProfile?.display_name||'用户');
+      try{
+        const students=await sbFetch('/rest/v1/students_v2?deleted_at=is.null&is_active=eq.true&select=id,team_id,name'),records=await sbFetch('/rest/v1/training_records_v2?deleted_at=is.null&select=id,team_id,student_id,round,value_seconds,value_score,notes,created_at&order=created_at.desc&limit=200'),studentMap=Object.fromEntries(students.map(student=>[student.id,student])),teamMap=Object.fromEntries(liveTeams.map(team=>[team.id,team]));dashboardRecords=records;
+        const start=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime(),today=records.filter(record=>new Date(record.created_at).getTime()>=start),times=records.map(record=>record.value_seconds===null?null:Number(record.value_seconds)).filter(value=>Number.isFinite(value));
+        document.querySelector('#home-overview').innerHTML=liveTeams.length+' 支赛队<br>'+students.length+' 名队员';document.querySelector('#home-today-count').textContent=today.length;document.querySelector('#home-student-count').textContent=students.length;document.querySelector('#home-best-time').textContent=times.length?Math.min(...times).toFixed(1)+'s':'—';
+        const recent=records.slice(0,6);document.querySelector('#home-history-list').innerHTML=recent.length?recent.map((record,index)=>{const student=studentMap[record.student_id],team=teamMap[record.team_id],date=new Date(record.created_at),timer=record.value_seconds!==null,value=timer?Number(record.value_seconds).toFixed(1)+'s':Number(record.value_score)+'分';return '<div class="history-row" data-record-id="'+record.id+'"><span class="student-index">'+String(index+1).padStart(2,'0')+'</span><span class="team-meta"><strong>'+escapeHtml(student?.name||'队员')+' · '+escapeHtml(team?.number||'赛队')+'</strong><span>'+(timer?'分段训练':'全场训练')+' · 第 '+record.round+' 轮</span></span><span><span class="history-time">'+value+'</span><time>'+String(date.getHours()).padStart(2,'0')+':'+String(date.getMinutes()).padStart(2,'0')+'</time></span></div>'}).join(''):'<div class="member-row"><span>暂无训练记录。</span></div>';document.querySelectorAll('[data-record-id]').forEach(row=>row.addEventListener('click',()=>openRecordEditor(row.dataset.recordId)));
+      }catch(error){document.querySelector('#home-history-list').innerHTML='<div class="member-row"><span>'+escapeHtml(error.message)+'</span></div>'}
+    }
+    function openRecordEditor(recordId){
+      if(currentProfile.role==='viewer')return;const record=dashboardRecords.find(item=>item.id===recordId);if(!record)return;const timer=record.value_seconds!==null;document.querySelector('#record-id-input').value=record.id;document.querySelector('#record-value-label').textContent=timer?'分段用时（秒）':'全场得分（分）';document.querySelector('#record-value-input').value=timer?record.value_seconds:record.value_score;document.querySelector('#record-value-input').step=timer?'0.1':'1';document.querySelector('#record-notes-input').value=record.notes||'';document.querySelector('#record-delete-button').hidden=currentProfile.role!=='admin';document.querySelector('#record-form-error').textContent='';document.querySelector('#record-dialog').showModal();
+    }
+    async function updateRecord(event){
+      event.preventDefault();const id=document.querySelector('#record-id-input').value,record=dashboardRecords.find(item=>item.id===id),button=document.querySelector('#record-save-button'),error=document.querySelector('#record-form-error'),value=Number(document.querySelector('#record-value-input').value);if(!record||!Number.isFinite(value)||value<0)return;button.disabled=true;button.textContent='正在保存…';error.textContent='';
+      try{await sbFetch('/rest/v1/training_records_v2?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:{value_seconds:record.value_seconds!==null?value:null,value_score:record.value_seconds===null?value:null,notes:document.querySelector('#record-notes-input').value.trim()||null,updated_at:new Date().toISOString()},headers:{Prefer:'return=minimal'}});document.querySelector('#record-dialog').close();await loadDashboard();showToast('记录已修改')}catch(err){error.textContent=err.message}finally{button.disabled=false;button.textContent='保存修改'}
+    }
+    async function deleteRecord(){
+      const id=document.querySelector('#record-id-input').value;if(currentProfile.role!=='admin'||!confirm('确认删除这条训练记录？删除后将不再参与统计。'))return;const button=document.querySelector('#record-delete-button');button.disabled=true;
+      try{await sbFetch('/rest/v1/training_records_v2?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:{deleted_at:new Date().toISOString(),updated_at:new Date().toISOString()},headers:{Prefer:'return=minimal'}});document.querySelector('#record-dialog').close();await loadDashboard();showToast('记录已删除')}catch(error){document.querySelector('#record-form-error').textContent=error.message}finally{button.disabled=false}
+    }
+    function showToast(message){const toast=document.querySelector('.toast');toast.textContent=message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800)}
+    async function createTeam(event){
+      event.preventDefault();const button=document.querySelector('#team-save-button'),error=document.querySelector('#team-form-error');error.textContent='';button.disabled=true;button.textContent='正在创建…';
+      try{
+        await sbFetch('/rest/v1/teams_v2',{method:'POST',body:{number:document.querySelector('#team-number-input').value.trim().toUpperCase(),type:document.querySelector('#team-type-input').value,target_event:document.querySelector('#team-target-input').value.trim()||null,created_by:currentProfile.id},headers:{Prefer:'return=representation'}});
+        document.querySelector('#team-dialog').close();document.querySelector('#team-form').reset();await loadTeams();showToast('赛队已创建');
+      }catch(err){error.textContent=err.message||'创建失败'}finally{button.disabled=false;button.textContent='创建赛队'}
+    }
+    async function openMembers(teamId){
+      const team=liveTeams.find(item=>item.id===teamId);activeMembersTeamId=teamId;document.querySelector('#member-team-id').value=teamId;document.querySelector('#members-title').textContent=(team?.number||'赛队')+' · 队员';document.querySelector('#members-dialog').showModal();await loadMembers(teamId);if(currentProfile.role==='admin')await loadCoachAdmin(teamId);
+    }
+    async function loadMembers(teamId){
+      const list=document.querySelector('#member-list');list.innerHTML='<div class="member-row"><span>正在加载…</span></div>';
+      try{const members=await sbFetch('/rest/v1/students_v2?team_id=eq.'+encodeURIComponent(teamId)+'&deleted_at=is.null&is_active=eq.true&select=id,name,role&order=name.asc');list.innerHTML=members.length?members.map((m,i)=>'<div class="member-row"><span class="student-index">'+String(i+1).padStart(2,'0')+'</span><span class="team-meta"><strong>'+escapeHtml(m.name)+'</strong><span>'+escapeHtml(m.role||'未设置')+'</span></span>'+(currentProfile.role==='viewer'?'':'<button class="remove-access" type="button" data-delete-student="'+m.id+'" data-student-name="'+escapeHtml(m.name)+'">删除</button>')+'</div>').join(''):'<div class="member-row"><span>暂无队员，请在下方添加。</span></div>';list.querySelectorAll('[data-delete-student]').forEach(button=>button.addEventListener('click',()=>deleteStudent(button.dataset.deleteStudent,button.dataset.studentName)))}catch(err){list.innerHTML='<div class="member-row"><span>'+escapeHtml(err.message)+'</span></div>'}
+    }
+    async function createMember(event){
+      event.preventDefault();const button=document.querySelector('#member-save-button'),error=document.querySelector('#member-form-error'),teamId=document.querySelector('#member-team-id').value;error.textContent='';button.disabled=true;button.textContent='正在添加…';
+      try{await sbFetch('/rest/v1/students_v2',{method:'POST',body:{team_id:teamId,name:document.querySelector('#member-name-input').value.trim(),role:document.querySelector('#member-role-input').value},headers:{Prefer:'return=representation'}});document.querySelector('#member-name-input').value='';await loadMembers(teamId);showToast('队员已添加')}catch(err){error.textContent=err.message||'添加失败'}finally{button.disabled=false;button.textContent='添加队员'}
+    }
+    async function deleteStudent(studentId,name){
+      if(currentProfile.role==='viewer'||!confirm('确认删除队员“'+name+'”？其历史训练记录将停止显示在常规录入中。'))return;
+      try{await sbFetch('/rest/v1/students_v2?id=eq.'+encodeURIComponent(studentId),{method:'PATCH',body:{is_active:false,deleted_at:new Date().toISOString(),updated_at:new Date().toISOString()},headers:{Prefer:'return=minimal'}});await loadMembers(activeMembersTeamId);await loadDashboard();showToast('队员已删除')}catch(error){showToast('删除失败：'+error.message)}
+    }
+    async function deleteTeam(){
+      if(currentProfile.role!=='admin')return;const team=liveTeams.find(item=>item.id===activeMembersTeamId);if(!team||!confirm('确认删除赛队“'+team.number+'”？赛队将从所有账号中隐藏。'))return;
+      const button=document.querySelector('#team-delete-button');button.disabled=true;button.textContent='正在删除…';try{await sbFetch('/rest/v1/teams_v2?id=eq.'+encodeURIComponent(team.id),{method:'PATCH',body:{is_active:false,deleted_at:new Date().toISOString(),updated_at:new Date().toISOString()},headers:{Prefer:'return=minimal'}});document.querySelector('#members-dialog').close();await loadTeams();showToast('赛队已删除')}catch(error){showToast('删除失败：'+error.message)}finally{button.disabled=false;button.textContent='删除这个赛队'}
+    }
+    async function loadCoachAdmin(teamId){
+      const list=document.querySelector('#coach-list'),select=document.querySelector('#coach-profile-select');list.innerHTML='<div class="member-row"><span>正在加载教练…</span></div>';
+      try{
+        allProfiles=await sbFetch('/rest/v1/profiles?is_active=eq.true&select=id,display_name,role&order=display_name.asc');const assignments=await sbFetch('/rest/v1/team_coaches?team_id=eq.'+encodeURIComponent(teamId)+'&select=user_id,access_role');
+        const assigned=new Set(assignments.map(item=>item.user_id));select.innerHTML='<option value="">请选择教练</option>'+allProfiles.filter(profile=>profile.role!=='viewer'&&!assigned.has(profile.id)).map(profile=>'<option value="'+profile.id+'">'+escapeHtml(profile.display_name||'未命名账号')+' · '+escapeHtml(profile.role)+'</option>').join('');
+        list.innerHTML=assignments.length?assignments.map(item=>{const profile=allProfiles.find(entry=>entry.id===item.user_id);return '<div class="member-row"><span class="team-meta"><strong>'+escapeHtml(profile?.display_name||'教练账号')+'</strong><span>'+({owner:'负责人',coach:'可录入',viewer:'仅查看'}[item.access_role]||item.access_role)+'</span></span><button class="remove-access" data-remove-coach="'+item.user_id+'">移除</button></div>'}).join(''):'<div class="member-row"><span>暂未分配教练。</span></div>';
+        list.querySelectorAll('[data-remove-coach]').forEach(button=>button.addEventListener('click',()=>removeCoach(button.dataset.removeCoach)));
+      }catch(error){list.innerHTML='<div class="member-row"><span>'+escapeHtml(error.message)+'</span></div>'}
+    }
+    async function assignCoach(event){
+      event.preventDefault();const button=document.querySelector('#coach-save-button'),error=document.querySelector('#coach-form-error'),userId=document.querySelector('#coach-profile-select').value;error.textContent='';if(!userId)return;
+      button.disabled=true;button.textContent='正在分配…';try{await sbFetch('/rest/v1/team_coaches?on_conflict=team_id,user_id',{method:'POST',body:{team_id:activeMembersTeamId,user_id:userId,access_role:document.querySelector('#coach-access-select').value},headers:{Prefer:'resolution=merge-duplicates,return=minimal'}});await loadCoachAdmin(activeMembersTeamId);showToast('教练已分配')}catch(err){error.textContent=err.message}finally{button.disabled=false;button.textContent='分配教练'}
+    }
+    async function removeCoach(userId){
+      if(!confirm('确认移除这名教练对该赛队的访问权限？'))return;try{await sbFetch('/rest/v1/team_coaches?team_id=eq.'+encodeURIComponent(activeMembersTeamId)+'&user_id=eq.'+encodeURIComponent(userId),{method:'DELETE',headers:{Prefer:'return=minimal'}});await loadCoachAdmin(activeMembersTeamId);showToast('教练权限已移除')}catch(error){showToast(error.message)}
+    }
+    async function bootstrapAuth(){
+      try{const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');if(!saved?.access_token)return setSignedIn(false);authSession=saved;await loadCurrentUser();await loadTeams();setSignedIn(true)}catch(error){console.warn(error);clearSession()}
+    }
+    document.querySelector('#login-form').addEventListener('submit',async event=>{
+      event.preventDefault();const button=document.querySelector('#login-button'),errorEl=document.querySelector('#auth-error');errorEl.textContent='';button.disabled=true;button.textContent='正在登录…';
+      try{const session=await sbFetch('/auth/v1/token?grant_type=password',{method:'POST',token:null,body:{email:document.querySelector('#login-email').value.trim(),password:document.querySelector('#login-password').value}});saveSession(session);await loadCurrentUser();await loadTeams();setSignedIn(true)}catch(error){clearSession();errorEl.textContent=error.message||'登录失败，请检查账号和密码'}finally{button.disabled=false;button.textContent='登录'}
+    });
+    function showAuthForm(name){['login','register','forgot','reset'].forEach(item=>document.querySelector('#'+item+'-form').hidden=item!==name);['auth-error','register-error','forgot-error','reset-error'].forEach(id=>document.querySelector('#'+id).textContent='')}
+    document.querySelector('#show-register-button').addEventListener('click',()=>showAuthForm('register'));document.querySelector('#show-login-button').addEventListener('click',()=>showAuthForm('login'));document.querySelector('#show-forgot-button').addEventListener('click',()=>{document.querySelector('#forgot-email').value=document.querySelector('#login-email').value;showAuthForm('forgot')});document.querySelectorAll('[data-back-login]').forEach(button=>button.addEventListener('click',()=>showAuthForm('login')));
+    document.querySelector('#register-form').addEventListener('submit',async event=>{
+      event.preventDefault();const button=document.querySelector('#register-button'),errorEl=document.querySelector('#register-error');errorEl.textContent='';button.disabled=true;button.textContent='正在注册…';
+      try{
+        const result=await sbFetch('/auth/v1/signup',{method:'POST',token:null,body:{email:document.querySelector('#register-email').value.trim(),password:document.querySelector('#register-password').value,data:{display_name:document.querySelector('#register-name').value.trim(),requested_role:document.querySelector('#register-role').value}}});
+        if(result?.access_token){saveSession(result);await loadCurrentUser();await loadTeams();setSignedIn(true);showToast('注册成功，等待管理员授权')}else{showAuthForm('login');document.querySelector('#login-email').value=document.querySelector('#register-email').value.trim();document.querySelector('#auth-error').textContent='注册成功，请验证邮箱后登录。'}
+      }catch(error){errorEl.textContent=error.message||'注册失败，请稍后重试'}finally{button.disabled=false;button.textContent='注册'}
+    });
+    document.querySelector('#forgot-form').addEventListener('submit',async event=>{
+      event.preventDefault();const button=document.querySelector('#forgot-button'),error=document.querySelector('#forgot-error'),email=document.querySelector('#forgot-email').value.trim();button.disabled=true;button.textContent='正在发送…';error.textContent='';
+      try{await sbFetch('/auth/v1/recover?redirect_to='+encodeURIComponent(location.origin+location.pathname),{method:'POST',token:null,body:{email}});error.style.color='var(--green)';error.textContent='重置邮件已发送，请检查收件箱和垃圾邮件。'}catch(err){error.style.color='var(--danger)';error.textContent=err.message||'发送失败，请稍后重试'}finally{button.disabled=false;button.textContent='发送重置邮件'}
+    });
+    function handleRecoveryLink(){
+      const params=new URLSearchParams(location.hash.slice(1));if(params.get('type')!=='recovery'||!params.get('access_token'))return false;authSession={access_token:params.get('access_token'),refresh_token:params.get('refresh_token'),token_type:'bearer',expires_in:Number(params.get('expires_in')||3600)};saveSession(authSession);setSignedIn(false);showAuthForm('reset');return true;
+    }
+    document.querySelector('#reset-form').addEventListener('submit',async event=>{
+      event.preventDefault();const password=document.querySelector('#reset-password').value,confirmPassword=document.querySelector('#reset-password-confirm').value,error=document.querySelector('#reset-error'),button=document.querySelector('#reset-button');error.textContent='';if(password!==confirmPassword){error.textContent='两次输入的密码不一致';return}button.disabled=true;button.textContent='正在保存…';
+      try{await sbFetch('/auth/v1/user',{method:'PUT',body:{password}});history.replaceState(null,'',location.pathname);await loadCurrentUser();await loadTeams();setSignedIn(true);showToast('密码已更新')}catch(err){error.textContent=err.message||'链接已失效，请重新申请'}finally{button.disabled=false;button.textContent='保存新密码'}
+    });
+    document.querySelector('#profile-button').addEventListener('click',async()=>{if(!confirm('确认退出当前账号？'))return;try{await sbFetch('/auth/v1/logout',{method:'POST'})}catch{}clearSession()});
+    document.querySelector('#new-team-button').addEventListener('click',()=>document.querySelector('#team-dialog').showModal());
+    document.querySelector('#team-form').addEventListener('submit',createTeam);
+    document.querySelector('#member-form').addEventListener('submit',createMember);
+    document.querySelector('#coach-form').addEventListener('submit',assignCoach);
+    document.querySelector('#record-form').addEventListener('submit',updateRecord);document.querySelector('#record-delete-button').addEventListener('click',deleteRecord);
+    document.querySelector('#team-delete-button').addEventListener('click',deleteTeam);
+    document.querySelectorAll('[data-close-dialog]').forEach(button=>button.addEventListener('click',()=>document.querySelector('#'+button.dataset.closeDialog).close()));
+    const views=[...document.querySelectorAll('.view')], navs=[...document.querySelectorAll('.nav-btn')];
+    function go(name){views.forEach(v=>v.classList.toggle('active',v.dataset.view===name));navs.forEach(n=>n.classList.toggle('active',n.dataset.nav===name));scrollTo({top:0,behavior:'smooth'});if(name==='reports')prepareReport()}
+    navs.forEach(n=>n.addEventListener('click',()=>go(n.dataset.nav)));
+    document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+    let trainingMode='segment', trainingStudents=[], segmentStarted=0, segmentElapsed=0, segmentTick=null, fieldLeft=60, fieldTick=null;
+    const segmentTime=document.querySelector('[data-segment-time]'), fieldTime=document.querySelector('[data-field-time]');
+    function showTrainingMode(mode){
+      trainingMode=mode;
+      document.querySelectorAll('[data-training-mode]').forEach(x=>x.classList.toggle('active',x.dataset.trainingMode===mode));
+      document.querySelectorAll('[data-panel]').forEach(x=>x.hidden=x.dataset.panel!==mode);
+      document.querySelectorAll('[data-results]').forEach(x=>x.hidden=x.dataset.results!==mode);
+      document.querySelector('#mode-help').textContent=mode==='segment'?'固定任务，记录每位学生完成任务所需的时间。':'固定 60 秒，记录每位学生在全场任务中完成的总分。';
+      document.querySelector('#data-title').textContent=mode==='segment'?'分段用时':'全场得分';
+      document.querySelector('#summary-label').textContent=mode==='segment'?'当前最佳用时':'当前最高得分';
+      updateTrainingSummary();
+    }
+    document.querySelectorAll('[data-training-mode]').forEach(b=>b.addEventListener('click',()=>showTrainingMode(b.dataset.trainingMode)));
+    function renderTrainingStudents(){
+      const empty='<div class="member-row"><span>该赛队暂无可用队员。</span></div>';
+      ['segment','field'].forEach(mode=>{
+        const unit=mode==='segment'?'秒':'分',inputmode=mode==='segment'?'decimal':'numeric';
+        document.querySelector('[data-results="'+mode+'"]').innerHTML=trainingStudents.length?trainingStudents.map((student,index)=>'<label class="student-card"><span class="student-index">'+String(index+1).padStart(2,'0')+'</span><span class="student-name"><strong>'+escapeHtml(student.name)+'</strong><span>'+escapeHtml(student.role||'队员')+' · '+(mode==='segment'?'待计时':'全场')+'</span></span><input class="score-input" data-student-id="'+student.id+'" inputmode="'+inputmode+'" type="number" min="0" step="'+(mode==='segment'?'0.1':'1')+'" placeholder="'+unit+'" aria-label="'+escapeHtml(student.name)+unit+'"></label>').join(''):empty;
+      });
+      document.querySelectorAll('[data-current-student]').forEach(element=>element.textContent=trainingStudents.length?'当前：'+trainingStudents[0].name:'请选择赛队');document.querySelector('[data-current-count="segment"]').textContent=trainingStudents.length?'1 / '+trainingStudents.length:'0 / 0';
+      document.querySelectorAll('[data-results] .score-input').forEach(input=>input.addEventListener('input',updateTrainingSummary));updateTrainingSummary();
+    }
+    async function loadTrainingStudents(){
+      const teamId=document.querySelector('#training-team-select').value;
+      if(!teamId){trainingStudents=[];renderTrainingStudents();return}
+      try{trainingStudents=await sbFetch('/rest/v1/students_v2?team_id=eq.'+encodeURIComponent(teamId)+'&deleted_at=is.null&is_active=eq.true&select=id,name,role&order=name.asc');renderTrainingStudents()}catch(error){trainingStudents=[];renderTrainingStudents();showToast(error.message)}
+    }
+    function updateTrainingSummary(){
+      const values=[...document.querySelector('[data-results="'+trainingMode+'"]').querySelectorAll('.score-input')].map(input=>Number(input.value)).filter(value=>Number.isFinite(value)&&value>=0);
+      document.querySelector('#summary-value').textContent=values.length?(trainingMode==='segment'?Math.min(...values).toFixed(1)+' 秒':Math.max(...values)+' 分'):'—';
+    }
+    document.querySelector('#training-team-select').addEventListener('change',loadTrainingStudents);
+    function formatElapsed(ms){const total=Math.floor(ms/100),min=Math.floor(total/600),sec=Math.floor(total/10)%60,tenth=total%10;return String(min).padStart(2,'0')+':'+String(sec).padStart(2,'0')+'.'+tenth}
+    document.querySelector('[data-timer-start="segment"]').addEventListener('click',e=>{
+      if(segmentTick){clearInterval(segmentTick);segmentTick=null;segmentElapsed=Date.now()-segmentStarted;document.querySelector('[data-segment-label]').textContent='已停止，可保存用时';e.currentTarget.textContent='继续计时';const empty=[...document.querySelectorAll('[data-results="segment"] .score-input')].find(input=>!input.value);if(empty){empty.value=(segmentElapsed/1000).toFixed(1);empty.dispatchEvent(new Event('input'))}return}
+      segmentStarted=Date.now()-segmentElapsed;segmentTick=setInterval(()=>segmentTime.textContent=formatElapsed(Date.now()-segmentStarted),100);document.querySelector('[data-segment-label]').textContent='计时中';e.currentTarget.textContent='停止计时';
+    });
+    document.querySelector('[data-timer-reset="segment"]').addEventListener('click',()=>{clearInterval(segmentTick);segmentTick=null;segmentElapsed=0;segmentTime.textContent='00:00.0';document.querySelector('[data-segment-label]').textContent='准备开始';document.querySelector('[data-timer-start="segment"]').textContent='开始计时'});
+    document.querySelector('[data-timer-start="field"]').addEventListener('click',e=>{
+      if(fieldTick){clearInterval(fieldTick);fieldTick=null;document.querySelector('[data-field-label]').textContent='已暂停';e.currentTarget.textContent='继续倒计时';return}
+      if(fieldLeft<=0)fieldLeft=60;
+      document.querySelector('[data-field-label]').textContent='全场训练进行中';e.currentTarget.textContent='暂停';
+      fieldTick=setInterval(()=>{fieldLeft--;fieldTime.textContent='00:'+String(fieldLeft).padStart(2,'0');if(fieldLeft<=0){clearInterval(fieldTick);fieldTick=null;document.querySelector('[data-field-label]').textContent='时间到，请录入得分';e.currentTarget.textContent='重新开始'}},1000);
+    });
+    document.querySelector('[data-timer-reset="field"]').addEventListener('click',()=>{clearInterval(fieldTick);fieldTick=null;fieldLeft=60;fieldTime.textContent='01:00';document.querySelector('[data-field-label]').textContent='倒计时准备';document.querySelector('[data-timer-start="field"]').textContent='开始 60 秒'});
+    async function saveTrainingRound(button){
+      const teamId=document.querySelector('#training-team-select').value,title=document.querySelector('#training-title-input').value.trim(),content=document.querySelector('#training-content-input').value.trim();
+      const inputs=[...document.querySelector('[data-results="'+trainingMode+'"]').querySelectorAll('.score-input')],records=inputs.filter(input=>input.value!=='').map(input=>({student_id:input.dataset.studentId,value:Number(input.value)}));
+      if(!teamId)return showToast('请先选择赛队');if(!records.length)return showToast('请至少录入一名队员的数据');if(records.some(record=>!Number.isFinite(record.value)||record.value<0))return showToast('请检查录入的数据');
+      button.disabled=true;button.textContent='正在保存…';
+      try{
+        const sessions=await sbFetch('/rest/v1/training_sessions',{method:'POST',body:{team_id:teamId,title:title||(trainingMode==='segment'?'分段训练':'全场训练'),training_content:content||null,notes:trainingMode==='segment'?'计时模式':'60秒计分模式',started_at:new Date().toISOString(),ended_at:new Date().toISOString(),created_by:currentProfile.id},headers:{Prefer:'return=representation'}}),session=sessions[0];
+        await sbFetch('/rest/v1/training_records_v2',{method:'POST',body:records.map(record=>({session_id:session.id,team_id:teamId,student_id:record.student_id,round:1,value_seconds:trainingMode==='segment'?record.value:null,value_score:trainingMode==='field'?record.value:null,record_data:{mode:trainingMode==='segment'?'timer':'score',duration_limit_seconds:trainingMode==='field'?60:null},created_by:currentProfile.id})),headers:{Prefer:'return=minimal'}});
+        inputs.forEach(input=>input.value='');updateTrainingSummary();await loadDashboard();showToast('本轮已保存并同步');
+      }catch(error){showToast('保存失败：'+error.message)}finally{button.disabled=false;button.textContent='保存本轮'}
+    }
+    function exportReportPdf(){
+      const title=document.querySelector('#report-title').textContent;if(title.includes('请选择')||document.querySelector('#metric-average').textContent==='—')return showToast('请先选择并加载有效报告数据');
+      const previousTitle=document.title,date=new Date().toLocaleDateString('zh-CN').replaceAll('/','-');document.title='VEX训练报告-'+title.replaceAll(' · ','-')+'-'+date;window.addEventListener('afterprint',()=>{document.title=previousTitle},{once:true});window.print();
+    }
+    document.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.action==='save')return saveTrainingRound(b);if(b.dataset.action==='pdf')return exportReportPdf();showToast('草稿已保存在本机')}));
+    let reportScope='team',reportStudents=[];
+    async function prepareReport(){
+      const teamId=document.querySelector('#report-team-select').value;
+      if(!teamId&&liveTeams.length)document.querySelector('#report-team-select').value=liveTeams[0].id;
+      await loadReportStudents();await loadReportData();
+    }
+    async function loadReportStudents(){
+      const teamId=document.querySelector('#report-team-select').value,select=document.querySelector('#report-student-select'),selected=select.value;
+      if(!teamId){reportStudents=[];select.innerHTML='<option value="">请选择学生</option>';return}
+      reportStudents=await sbFetch('/rest/v1/students_v2?team_id=eq.'+encodeURIComponent(teamId)+'&deleted_at=is.null&is_active=eq.true&select=id,name,role&order=name.asc');
+      select.innerHTML='<option value="">请选择学生</option>'+reportStudents.map(student=>'<option value="'+student.id+'">'+escapeHtml(student.name)+'</option>').join('');
+      if(reportStudents.some(student=>student.id===selected))select.value=selected;else if(reportScope==='student'&&reportStudents.length)select.value=reportStudents[0].id;
+    }
+    function setReportEmpty(message){
+      ['metric-best','metric-worst','metric-average'].forEach(id=>document.querySelector('#'+id).textContent='—');document.querySelector('#report-trend').textContent='暂无数据';document.querySelector('#report-description').textContent=message;document.querySelector('#report-chart').innerHTML='<div class="member-row"><span>'+escapeHtml(message)+'</span></div>';document.querySelector('[data-team-ranking]').innerHTML='<div class="member-row"><span>暂无队员训练数据。</span></div>';
+    }
+    async function loadReportData(){
+      const teamId=document.querySelector('#report-team-select').value,studentId=document.querySelector('#report-student-select').value,type=document.querySelector('#report-type-select').value,team=liveTeams.find(item=>item.id===teamId),student=reportStudents.find(item=>item.id===studentId),isTimer=type==='timer';
+      document.querySelector('#report-title').textContent=(reportScope==='student'?(student?.name||'请选择学生'):(team?.number||'请选择赛队'))+' · '+(isTimer?'分段训练':'全场训练');
+      document.querySelector('#ranking-title').textContent=reportScope==='student'?'训练明细':'队员表现';
+      const labels=isTimer?['最快用时 / 秒','最慢用时 / 秒','平均用时 / 秒']:['最高得分 / 分','最低得分 / 分','平均得分 / 分'];['best','worst','average'].forEach((key,index)=>document.querySelector('#metric-'+key+'-label').textContent=labels[index]);
+      if(!teamId||(reportScope==='student'&&!studentId))return setReportEmpty('请选择要查看的'+(reportScope==='student'?'学生':'赛队')+'。');
+      try{
+        let path='/rest/v1/training_records_v2?team_id=eq.'+encodeURIComponent(teamId)+'&deleted_at=is.null&'+(isTimer?'value_seconds=not.is.null':'value_score=not.is.null')+'&select=id,student_id,value_seconds,value_score,created_at&order=created_at.asc';if(reportScope==='student')path+='&student_id=eq.'+encodeURIComponent(studentId);
+        const records=await sbFetch(path);if(!records.length)return setReportEmpty('当前筛选条件下暂无训练记录。');
+        const values=records.map(record=>Number(isTimer?record.value_seconds:record.value_score)),best=isTimer?Math.min(...values):Math.max(...values),worst=isTimer?Math.max(...values):Math.min(...values),average=values.reduce((sum,value)=>sum+value,0)/values.length,format=value=>Number(value.toFixed(1));
+        document.querySelector('#metric-best').textContent=format(best);document.querySelector('#metric-worst').textContent=format(worst);document.querySelector('#metric-average').textContent=format(average);document.querySelector('#report-description').textContent='共记录 '+records.length+' 条有效训练数据，统计结果已从云端同步。';
+        const first=values[0],last=values[values.length-1],change=isTimer?first-last:last-first;document.querySelector('#report-trend').textContent=change>0?'进步 '+format(change)+(isTimer?' 秒':' 分'):change<0?'回落 '+format(Math.abs(change))+(isTimer?' 秒':' 分'):'保持稳定';
+        const recent=records.slice(-8),max=Math.max(...recent.map(record=>Number(isTimer?record.value_seconds:record.value_score)),1);document.querySelector('#report-chart').innerHTML=recent.map(record=>{const value=Number(isTimer?record.value_seconds:record.value_score),date=new Date(record.created_at),isBest=value===best;return '<div class="bar-item"><span class="bar-value">'+format(value)+'</span><span class="bar '+(isBest?'best':'')+'" style="--h:'+Math.max(8,value/max*88)+'%"></span><span class="bar-label">'+(date.getMonth()+1)+'/'+date.getDate()+'</span></div>'}).join('');
+        document.querySelector('#report-note').textContent=isTimer?'柱状图展示最近记录；用时越短越好，当前最快为 '+format(best)+' 秒。':'柱状图展示最近记录；得分越高越好，当前最高为 '+format(best)+' 分。';
+        const grouped={};records.forEach(record=>(grouped[record.student_id]??=[]).push(Number(isTimer?record.value_seconds:record.value_score)));document.querySelector('[data-team-ranking]').innerHTML=Object.entries(grouped).map(([id,list],index)=>{const item=reportStudents.find(student=>student.id===id),itemBest=isTimer?Math.min(...list):Math.max(...list),itemAvg=list.reduce((sum,value)=>sum+value,0)/list.length;return '<div class="history-row"><span class="student-index">'+String(index+1).padStart(2,'0')+'</span><span class="team-meta"><strong>'+escapeHtml(item?.name||'队员')+'</strong><span>'+(isTimer?'最快 ':'最高 ')+format(itemBest)+' · 平均 '+format(itemAvg)+(isTimer?' 秒':' 分')+'</span></span><span class="pill">'+list.length+' 次</span></div>'}).join('');
+      }catch(error){setReportEmpty('报告读取失败：'+error.message)}
+    }
+    document.querySelectorAll('[data-report-mode]').forEach(button=>button.addEventListener('click',async()=>{reportScope=button.dataset.reportMode;document.querySelectorAll('[data-report-mode]').forEach(item=>item.classList.toggle('active',item===button));document.querySelector('#report-student-select').hidden=reportScope!=='student';await loadReportStudents();await loadReportData()}));
+    document.querySelector('#report-team-select').addEventListener('change',async()=>{await loadReportStudents();await loadReportData()});document.querySelector('#report-student-select').addEventListener('change',loadReportData);document.querySelector('#report-type-select').addEventListener('change',loadReportData);
+    if(!handleRecoveryLink())bootstrapAuth();
+  </script>
+</body>
+</html>
