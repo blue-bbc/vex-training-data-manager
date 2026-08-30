@@ -53,13 +53,16 @@
     .form-shell{background:var(--surface);border-radius:var(--radius);overflow:hidden;margin-top:18px}
     .form-line{padding:14px 16px;display:flex;align-items:center;gap:14px;min-height:54px}.form-line+.form-line{border-top:1px solid var(--line)}
     .form-label{font-size:13px;color:var(--ink-2);width:58px}.form-value{flex:1;font-size:14px;font-weight:600;border:0;background:transparent;outline:0;min-width:0}.chev{color:var(--ink-3)}
+    .inline-action{border:0;background:var(--muted);color:var(--ink-2);border-radius:999px;padding:6px 9px;font-size:11px;cursor:pointer;white-space:nowrap}
     .mode-switch{display:flex;background:var(--muted);border-radius:10px;padding:3px;margin:18px 0}
     .mode-switch button{flex:1;border:0;background:transparent;border-radius:8px;min-height:38px;font-weight:650;color:var(--ink-2);cursor:pointer}
     .mode-switch button.active{background:var(--surface);color:var(--ink);box-shadow:0 2px 5px rgba(0,0,0,.08)}
     .mode-help{font-size:12px;line-height:1.55;color:var(--ink-2);margin:-8px 2px 16px}
     [hidden]{display:none!important}
     .timer-controls{display:flex;gap:8px;margin-top:12px}.timer-controls button{flex:1}
-    .active-student{display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface);border-radius:12px;margin-bottom:10px}
+    .timer-sound-setting{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 2px 0;color:var(--ink-2);font-size:12px}
+    .active-student{width:100%;border:0;text-align:left;color:inherit;font:inherit;display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface);border-radius:12px;margin-bottom:10px;cursor:pointer}
+    .active-student:focus-visible{outline:2px solid var(--ink);outline-offset:2px}.active-student:disabled{cursor:not-allowed;opacity:.62}
     .active-student .team-meta{flex:1}.active-student .pill{white-space:nowrap}
     .result-summary{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border-radius:12px;margin-top:10px;font-size:13px}
     .result-summary strong{font-size:20px;font-variant-numeric:tabular-nums}
@@ -79,10 +82,13 @@
     dialog::backdrop{background:rgba(0,0,0,.35);backdrop-filter:blur(5px)}
     .dialog-body{padding:20px}.dialog-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.dialog-head h2{font-size:19px}.icon-button{width:40px;height:40px;border:0;border-radius:50%;background:var(--muted);cursor:pointer;font-size:20px}
     .dialog-actions{display:flex;gap:8px;margin-top:18px}.dialog-actions button{flex:1}
+    .picker-list{display:flex;flex-direction:column;gap:7px;max-height:50vh;overflow:auto}.picker-option{width:100%;display:flex;align-items:center;gap:11px;border:0;background:var(--muted);border-radius:11px;padding:12px;text-align:left;font:inherit;color:inherit;cursor:pointer}.picker-option strong{font-size:14px}.picker-option span{display:block;color:var(--ink-3);font-size:11px;margin-top:2px}.picker-option.selected{background:var(--ink);color:white}.picker-option.selected span{color:#aaa}.picker-check{margin-left:auto;font-weight:700}.dialog-note{color:var(--ink-2);font-size:12px;line-height:1.55;margin:-8px 0 14px}
+    .lineup-score-card{background:var(--surface);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px}.lineup-score-card .student-index{flex:0 0 auto}.lineup-score-card .score-input{width:96px;flex:0 0 96px}.lineup-names{white-space:normal!important;line-height:1.45}
     .field-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
     .member-list{display:flex;flex-direction:column;gap:7px;max-height:280px;overflow:auto;margin:12px 0}.member-row{display:flex;align-items:center;gap:10px;padding:11px;background:var(--muted);border-radius:10px}.member-row strong{font-size:14px}.member-row span{font-size:11px;color:var(--ink-3)}
     .admin-panel{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}.admin-panel h3{font-size:15px;margin-bottom:10px}.member-row .remove-access{margin-left:auto;border:0;background:transparent;color:var(--danger);font-size:12px;cursor:pointer;padding:7px}
-    .student-card{background:var(--surface);border-radius:12px;padding:14px;display:grid;grid-template-columns:38px 1fr 92px;align-items:center;gap:10px}
+    .student-card{background:var(--surface);border-radius:12px;padding:14px;display:grid;grid-template-columns:38px 1fr 92px;align-items:center;gap:10px;cursor:pointer;transition:box-shadow .16s ease,background .16s ease}
+    .student-card.selected{box-shadow:inset 0 0 0 1.5px var(--ink);background:color-mix(in oklch,var(--surface) 94%,var(--muted))}
     .student-index{width:34px;height:34px;border-radius:50%;background:var(--muted);display:grid;place-items:center;font-size:12px;color:var(--ink-2)}
     .student-name strong{display:block;font-size:14px}.student-name span{font-size:11px;color:var(--ink-3)}
     .score-input{height:42px;border:1px solid var(--line);border-radius:10px;text-align:center;width:100%;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;background:white;outline:none}
@@ -185,17 +191,18 @@
             <div class="form-shell">
               <label class="form-line"><span class="form-label">赛队</span><select class="form-value" id="training-team-select" aria-label="选择赛队"><option value="">请选择赛队</option></select><span class="chev">›</span></label>
               <div class="form-line"><span class="form-label">阶段</span><input class="form-value" id="training-title-input" value="底盘操控测试" aria-label="训练阶段"></div>
-              <div class="form-line"><span class="form-label">内容</span><input class="form-value" id="training-content-input" placeholder="填写本次训练内容" autocomplete="off" aria-label="训练内容"></div>
+              <div class="form-line"><span class="form-label">内容</span><input class="form-value" id="training-content-input" placeholder="填写一次，本队后续沿用" autocomplete="off" aria-label="训练内容"><button class="inline-action" id="clear-training-context" type="button">清空</button></div>
             </div>
             <div class="mode-switch"><button class="active" data-training-mode="segment">分段训练</button><button data-training-mode="field">全场训练</button></div>
             <p class="mode-help" id="mode-help">固定任务，记录每位学生完成任务所需的时间。</p>
             <div class="training-panel" data-panel="segment">
-              <div class="active-student"><span class="student-index">01</span><span class="team-meta"><strong data-current-student="segment">请选择赛队</strong><span>分段计时任务</span></span><span class="pill" data-current-count="segment">0 / 0</span></div>
+              <button class="active-student" type="button" data-student-picker="segment"><span class="student-index" data-current-index="segment">—</span><span class="team-meta"><strong data-current-student="segment">请选择赛队</strong><span>点按选择本次计时队员</span></span><span class="pill" data-current-count="segment">0 / 0</span><span class="chev">›</span></button>
               <div class="timer"><div><div class="timer-time" data-segment-time>00:00.0</div><p data-segment-label>准备开始</p></div></div>
               <div class="timer-controls"><button class="secondary" data-timer-reset="segment">重置</button><button class="primary" data-timer-start="segment">开始计时</button></div>
             </div>
             <div class="training-panel" data-panel="field" hidden>
-              <div class="active-student"><span class="student-index">01</span><span class="team-meta"><strong data-current-student="field">请选择赛队</strong><span>全场综合任务</span></span><span class="pill" data-current-count="field">60 秒</span></div>
+              <button class="active-student" type="button" data-student-picker="field"><span class="student-index" data-current-index="field">—</span><span class="team-meta"><strong data-current-student="field">请选择赛队</strong><span>点按选择本次计分队员</span></span><span class="pill" data-current-count="field">0 / 0</span><span class="chev">›</span></button>
+              <div class="timer-sound-setting"><span>换手提示：剩余 35 秒与 25 秒</span><button class="inline-action" id="timer-sound-toggle" type="button" aria-pressed="true">声音开启</button></div>
               <div class="timer"><div><div class="timer-time" data-field-time>01:00</div><p data-field-label>倒计时准备</p></div></div>
               <div class="timer-controls"><button class="secondary" data-timer-reset="field">重置</button><button class="primary" data-timer-start="field">开始 60 秒</button></div>
             </div>
@@ -293,28 +300,46 @@
       <div class="dialog-actions"><button type="button" class="secondary" id="record-delete-button">删除记录</button><button class="primary" id="record-save-button" type="submit">保存修改</button></div>
     </form>
   </dialog>
-  <script src="config.js"></script>
+  <dialog id="student-picker-dialog">
+    <div class="dialog-body">
+      <div class="dialog-head"><div><p class="eyebrow">本轮训练</p><h2>选择队员</h2></div><button type="button" class="icon-button" data-close-dialog="student-picker-dialog" aria-label="关闭">×</button></div>
+      <p class="dialog-note" id="student-picker-note">可跳过缺勤队员，也可以连续选择同一位队员。计时进行中不可切换。</p>
+      <div class="picker-list" id="student-picker-list"></div>
+      <div class="dialog-actions" id="student-picker-actions" hidden><button type="button" class="secondary" data-close-dialog="student-picker-dialog">取消</button><button type="button" class="primary" id="student-picker-confirm">确认阵容</button></div>
+    </div>
+  </dialog>
   <script>
-    const SUPABASE_URL=window.VEX_CONFIG?.supabaseUrl||'';
-    const SUPABASE_KEY=window.VEX_CONFIG?.supabasePublishableKey||'';
-    if(!SUPABASE_URL||!SUPABASE_KEY){
-      document.addEventListener('DOMContentLoaded',()=>{
-        const error=document.querySelector('#auth-error');
-        if(error) error.textContent='尚未配置 Supabase。请复制 config.example.js 为 config.js，并填写项目连接信息。';
-      });
-    }
+    const SUPABASE_URL='https://yxstmogjqsjlfglhzlxo.supabase.co';
+    const SUPABASE_KEY='sb_publishable_jx146dXUm3xnvik7NgcyxQ_RgysVjdO';
     const SESSION_KEY='vex_auth_session';
-    let authSession=null,currentProfile=null,liveTeams=[],allProfiles=[],activeMembersTeamId='',dashboardRecords=[];
+    let authSession=null,currentProfile=null,liveTeams=[],allProfiles=[],activeMembersTeamId='',dashboardRecords=[],refreshSessionPromise=null;
     const authScreen=document.querySelector('#auth-screen'),appShell=document.querySelector('.app'),bottomNav=document.querySelector('.bottom-nav');
-    async function sbFetch(path,{method='GET',body,token=authSession?.access_token,headers={}}={}){
+    function setSignedIn(signedIn){authScreen.hidden=signedIn;appShell.hidden=!signedIn;bottomNav.hidden=!signedIn}
+    function saveSession(session){const normalized={...session};if(!normalized.expires_at&&normalized.expires_in)normalized.expires_at=Math.floor(Date.now()/1000)+Number(normalized.expires_in);authSession=normalized;localStorage.setItem(SESSION_KEY,JSON.stringify(normalized))}
+    function clearSession(){authSession=null;currentProfile=null;liveTeams=[];localStorage.removeItem(SESSION_KEY);setSignedIn(false)}
+    function sessionExpiresAt(){if(authSession?.expires_at)return Number(authSession.expires_at);try{return Number(JSON.parse(atob(authSession.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).exp||0)}catch{return 0}}
+    function sessionNeedsRefresh(){const expiresAt=sessionExpiresAt();return Boolean(authSession?.refresh_token&&expiresAt&&expiresAt-Math.floor(Date.now()/1000)<90)}
+    async function refreshAuthSession(){
+      if(refreshSessionPromise)return refreshSessionPromise;
+      if(!authSession?.refresh_token)throw new Error('登录已失效，请重新登录');
+      refreshSessionPromise=(async()=>{
+        const response=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:authSession.refresh_token})});
+        const text=await response.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}
+        if(!response.ok||!data?.access_token)throw new Error(data?.msg||data?.message||data?.error_description||'登录续期失败，请重新登录');
+        saveSession(data);return data;
+      })();
+      try{return await refreshSessionPromise}finally{refreshSessionPromise=null}
+    }
+    async function sbFetch(path,{method='GET',body,token=authSession?.access_token,headers={},retryAuth=true}={}){
+      const usesUserSession=Boolean(token&&authSession&&token===authSession.access_token);
+      if(usesUserSession&&sessionNeedsRefresh()){await refreshAuthSession();token=authSession.access_token}
       const response=await fetch(SUPABASE_URL+path,{method,headers:{apikey:SUPABASE_KEY,Authorization:token?'Bearer '+token:'Bearer '+SUPABASE_KEY,'Content-Type':'application/json',...headers},body:body===undefined?undefined:JSON.stringify(body)});
       const text=await response.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}
+      const expired=response.status===401&&/jwt|token|expired/i.test(String(data?.msg||data?.message||data?.error_description||data||''));
+      if(expired&&retryAuth&&authSession?.refresh_token){await refreshAuthSession();return sbFetch(path,{method,body,token:authSession.access_token,headers,retryAuth:false})}
       if(!response.ok)throw new Error(data?.msg||data?.message||data?.error_description||'请求失败');
       return data;
     }
-    function setSignedIn(signedIn){authScreen.hidden=signedIn;appShell.hidden=!signedIn;bottomNav.hidden=!signedIn}
-    function saveSession(session){authSession=session;localStorage.setItem(SESSION_KEY,JSON.stringify(session))}
-    function clearSession(){authSession=null;currentProfile=null;liveTeams=[];localStorage.removeItem(SESSION_KEY);setSignedIn(false)}
     async function loadCurrentUser(){
       const user=await sbFetch('/auth/v1/user');
       const profiles=await sbFetch('/rest/v1/profiles?id=eq.'+encodeURIComponent(user.id)+'&select=id,display_name,role,is_active');
@@ -346,10 +371,10 @@
     async function loadDashboard(){
       const now=new Date(),weekday=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][now.getDay()];document.querySelector('#home-date').textContent=weekday+' · '+(now.getMonth()+1)+'月'+now.getDate()+'日';document.querySelector('#home-greeting').textContent='你好，'+(currentProfile?.display_name||'用户');
       try{
-        const students=await sbFetch('/rest/v1/students_v2?deleted_at=is.null&is_active=eq.true&select=id,team_id,name'),records=await sbFetch('/rest/v1/training_records_v2?deleted_at=is.null&select=id,team_id,student_id,round,value_seconds,value_score,notes,created_at&order=created_at.desc&limit=200'),studentMap=Object.fromEntries(students.map(student=>[student.id,student])),teamMap=Object.fromEntries(liveTeams.map(team=>[team.id,team]));dashboardRecords=records;
+        const students=await sbFetch('/rest/v1/students_v2?deleted_at=is.null&is_active=eq.true&select=id,team_id,name'),records=await sbFetch('/rest/v1/training_records_v2?deleted_at=is.null&select=id,team_id,student_id,round,value_seconds,value_score,notes,created_at&order=created_at.desc&limit=200'),participantRows=records.length?await sbFetch('/rest/v1/training_record_participants?record_id=in.('+records.map(record=>record.id).join(',')+')&select=record_id,student_id'):[],studentMap=Object.fromEntries(students.map(student=>[student.id,student])),teamMap=Object.fromEntries(liveTeams.map(team=>[team.id,team])),participantsByRecord={};participantRows.forEach(link=>(participantsByRecord[link.record_id]??=[]).push(link.student_id));dashboardRecords=records;
         const start=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime(),today=records.filter(record=>new Date(record.created_at).getTime()>=start),times=records.map(record=>record.value_seconds===null?null:Number(record.value_seconds)).filter(value=>Number.isFinite(value));
         document.querySelector('#home-overview').innerHTML=liveTeams.length+' 支赛队<br>'+students.length+' 名队员';document.querySelector('#home-today-count').textContent=today.length;document.querySelector('#home-student-count').textContent=students.length;document.querySelector('#home-best-time').textContent=times.length?Math.min(...times).toFixed(1)+'s':'—';
-        const recent=records.slice(0,6);document.querySelector('#home-history-list').innerHTML=recent.length?recent.map((record,index)=>{const student=studentMap[record.student_id],team=teamMap[record.team_id],date=new Date(record.created_at),timer=record.value_seconds!==null,value=timer?Number(record.value_seconds).toFixed(1)+'s':Number(record.value_score)+'分';return '<div class="history-row" data-record-id="'+record.id+'"><span class="student-index">'+String(index+1).padStart(2,'0')+'</span><span class="team-meta"><strong>'+escapeHtml(student?.name||'队员')+' · '+escapeHtml(team?.number||'赛队')+'</strong><span>'+(timer?'分段训练':'全场训练')+' · 第 '+record.round+' 轮</span></span><span><span class="history-time">'+value+'</span><time>'+String(date.getHours()).padStart(2,'0')+':'+String(date.getMinutes()).padStart(2,'0')+'</time></span></div>'}).join(''):'<div class="member-row"><span>暂无训练记录。</span></div>';document.querySelectorAll('[data-record-id]').forEach(row=>row.addEventListener('click',()=>openRecordEditor(row.dataset.recordId)));
+        const recent=records.slice(0,6);document.querySelector('#home-history-list').innerHTML=recent.length?recent.map((record,index)=>{const student=studentMap[record.student_id],team=teamMap[record.team_id],date=new Date(record.created_at),timer=record.value_seconds!==null,value=timer?Number(record.value_seconds).toFixed(1)+'s':Number(record.value_score)+'分',lineup=(participantsByRecord[record.id]||[]).map(id=>studentMap[id]?.name).filter(Boolean).join('＋'),displayName=timer?(student?.name||'队员'):(lineup||student?.name||'队员');return '<div class="history-row" data-record-id="'+record.id+'"><span class="student-index">'+String(index+1).padStart(2,'0')+'</span><span class="team-meta"><strong>'+escapeHtml(displayName)+' · '+escapeHtml(team?.number||'赛队')+'</strong><span>'+(timer?'分段训练':'全场阵容训练')+' · 第 '+record.round+' 轮</span></span><span><span class="history-time">'+value+'</span><time>'+String(date.getHours()).padStart(2,'0')+':'+String(date.getMinutes()).padStart(2,'0')+'</time></span></div>'}).join(''):'<div class="member-row"><span>暂无训练记录。</span></div>';document.querySelectorAll('[data-record-id]').forEach(row=>row.addEventListener('click',()=>openRecordEditor(row.dataset.recordId)));
       }catch(error){document.querySelector('#home-history-list').innerHTML='<div class="member-row"><span>'+escapeHtml(error.message)+'</span></div>'}
     }
     function openRecordEditor(recordId){
@@ -445,60 +470,107 @@
     function go(name){views.forEach(v=>v.classList.toggle('active',v.dataset.view===name));navs.forEach(n=>n.classList.toggle('active',n.dataset.nav===name));scrollTo({top:0,behavior:'smooth'});if(name==='reports')prepareReport()}
     navs.forEach(n=>n.addEventListener('click',()=>go(n.dataset.nav)));
     document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
-    let trainingMode='segment', trainingStudents=[], segmentStarted=0, segmentElapsed=0, segmentTick=null, fieldLeft=60, fieldTick=null;
+    const TRAINING_CONTEXT_KEY='vex_training_context_v1';
+    let trainingMode='segment',trainingStudents=[],selectedTrainingStudentId='',fieldParticipantIds=[],fieldPickerDraftIds=[],segmentStarted=0,segmentElapsed=0,segmentTick=null,fieldLeft=60,fieldTick=null,fieldPreTick=null;
     const segmentTime=document.querySelector('[data-segment-time]'), fieldTime=document.querySelector('[data-field-time]');
+    function readTrainingContexts(){try{return JSON.parse(localStorage.getItem(TRAINING_CONTEXT_KEY)||'{}')}catch{return {}}}
+    function saveTrainingContext(){const teamId=document.querySelector('#training-team-select').value;if(!teamId)return;const contexts=readTrainingContexts();contexts[teamId]={title:document.querySelector('#training-title-input').value,content:document.querySelector('#training-content-input').value};localStorage.setItem(TRAINING_CONTEXT_KEY,JSON.stringify(contexts))}
+    function loadTrainingContext(){const teamId=document.querySelector('#training-team-select').value,context=readTrainingContexts()[teamId];document.querySelector('#training-title-input').value=context?.title??'底盘操控测试';document.querySelector('#training-content-input').value=context?.content??''}
     function showTrainingMode(mode){
       trainingMode=mode;
       document.querySelectorAll('[data-training-mode]').forEach(x=>x.classList.toggle('active',x.dataset.trainingMode===mode));
       document.querySelectorAll('[data-panel]').forEach(x=>x.hidden=x.dataset.panel!==mode);
       document.querySelectorAll('[data-results]').forEach(x=>x.hidden=x.dataset.results!==mode);
-      document.querySelector('#mode-help').textContent=mode==='segment'?'固定任务，记录每位学生完成任务所需的时间。':'固定 60 秒，记录每位学生在全场任务中完成的总分。';
+      document.querySelector('#mode-help').textContent=mode==='segment'?'固定任务，记录每位学生完成任务所需的时间。':'每轮自由选择 2–3 名上场队员，60 秒结束后只录入一次团队总分。';
       document.querySelector('#data-title').textContent=mode==='segment'?'分段用时':'全场得分';
       document.querySelector('#summary-label').textContent=mode==='segment'?'当前最佳用时':'当前最高得分';
       updateTrainingSummary();
     }
     document.querySelectorAll('[data-training-mode]').forEach(b=>b.addEventListener('click',()=>showTrainingMode(b.dataset.trainingMode)));
+    function updateSelectedTrainingStudent(){
+      const index=trainingStudents.findIndex(student=>student.id===selectedTrainingStudentId),student=trainingStudents[index];
+      const participants=trainingStudents.filter(item=>fieldParticipantIds.includes(item.id)),lineupNames=participants.map(item=>item.name).join('、');
+      document.querySelector('[data-current-student="segment"]').textContent=student?'当前：'+student.name:(trainingStudents.length?'请选择队员':'请选择赛队');
+      document.querySelector('[data-current-index="segment"]').textContent=student?String(index+1).padStart(2,'0'):'—';document.querySelector('[data-current-count="segment"]').textContent=student?(index+1)+' / '+trainingStudents.length:'0 / '+trainingStudents.length;
+      document.querySelector('[data-current-student="field"]').textContent=participants.length?'本轮：'+lineupNames:(trainingStudents.length?'请选择上场队员':'请选择赛队');
+      document.querySelector('[data-current-index="field"]').textContent=participants.length?String(participants.length).padStart(2,'0'):'—';document.querySelector('[data-current-count="field"]').textContent=participants.length?participants.length+' 人':'0 人';
+      document.querySelectorAll('[data-results="segment"] [data-student-card-id]').forEach(card=>card.classList.toggle('selected',card.dataset.studentCardId===selectedTrainingStudentId));
+      const lineupCopy=document.querySelector('[data-field-lineup]');if(lineupCopy)lineupCopy.textContent=lineupNames||'尚未选择本轮上场队员';
+    }
+    function selectTrainingStudent(studentId,{closePicker=false}={}){if(segmentTick||fieldTick||fieldPreTick)return showToast('请先暂停计时再切换队员');if(!trainingStudents.some(student=>student.id===studentId))return;selectedTrainingStudentId=studentId;updateSelectedTrainingStudent();if(closePicker)document.querySelector('#student-picker-dialog').close()}
+    function openStudentPicker(){
+      if(segmentTick||fieldTick||fieldPreTick)return showToast('请先暂停计时再切换队员');
+      if(!trainingStudents.length)return showToast('请先选择有队员的赛队');
+      const isField=trainingMode==='field';fieldPickerDraftIds=[...fieldParticipantIds];document.querySelector('#student-picker-note').textContent=isField?'每一轮都可重新组合，建议选择 2–3 名实际上场队员。':'选择本次分段计时的队员；保存后仍可重新选择。';document.querySelector('#student-picker-actions').hidden=!isField;
+      document.querySelector('#student-picker-list').innerHTML=trainingStudents.map((student,index)=>{const selected=isField?fieldPickerDraftIds.includes(student.id):student.id===selectedTrainingStudentId;return '<button type="button" class="picker-option '+(selected?'selected':'')+'" data-pick-student="'+student.id+'"><span class="student-index">'+String(index+1).padStart(2,'0')+'</span><span class="team-meta"><strong>'+escapeHtml(student.name)+'</strong><span>'+escapeHtml(student.role||'队员')+'</span></span><span class="picker-check">'+(selected?'✓':'')+'</span></button>'}).join('');
+      document.querySelectorAll('[data-pick-student]').forEach(button=>button.addEventListener('click',()=>{if(!isField)return selectTrainingStudent(button.dataset.pickStudent,{closePicker:true});const id=button.dataset.pickStudent;fieldPickerDraftIds=fieldPickerDraftIds.includes(id)?fieldPickerDraftIds.filter(item=>item!==id):[...fieldPickerDraftIds,id];button.classList.toggle('selected',fieldPickerDraftIds.includes(id));button.querySelector('.picker-check').textContent=fieldPickerDraftIds.includes(id)?'✓':''}));
+      document.querySelector('#student-picker-dialog').showModal();
+    }
+    document.querySelectorAll('[data-student-picker]').forEach(button=>button.addEventListener('click',openStudentPicker));
+    document.querySelector('#student-picker-confirm').addEventListener('click',()=>{if(!fieldPickerDraftIds.length)return showToast('请至少选择一名上场队员');fieldParticipantIds=[...fieldPickerDraftIds];updateSelectedTrainingStudent();document.querySelector('#student-picker-dialog').close()});
     function renderTrainingStudents(){
       const empty='<div class="member-row"><span>该赛队暂无可用队员。</span></div>';
-      ['segment','field'].forEach(mode=>{
-        const unit=mode==='segment'?'秒':'分',inputmode=mode==='segment'?'decimal':'numeric';
-        document.querySelector('[data-results="'+mode+'"]').innerHTML=trainingStudents.length?trainingStudents.map((student,index)=>'<label class="student-card"><span class="student-index">'+String(index+1).padStart(2,'0')+'</span><span class="student-name"><strong>'+escapeHtml(student.name)+'</strong><span>'+escapeHtml(student.role||'队员')+' · '+(mode==='segment'?'待计时':'全场')+'</span></span><input class="score-input" data-student-id="'+student.id+'" inputmode="'+inputmode+'" type="number" min="0" step="'+(mode==='segment'?'0.1':'1')+'" placeholder="'+unit+'" aria-label="'+escapeHtml(student.name)+unit+'"></label>').join(''):empty;
-      });
-      document.querySelectorAll('[data-current-student]').forEach(element=>element.textContent=trainingStudents.length?'当前：'+trainingStudents[0].name:'请选择赛队');document.querySelector('[data-current-count="segment"]').textContent=trainingStudents.length?'1 / '+trainingStudents.length:'0 / 0';
-      document.querySelectorAll('[data-results] .score-input').forEach(input=>input.addEventListener('input',updateTrainingSummary));updateTrainingSummary();
+      document.querySelector('[data-results="segment"]').innerHTML=trainingStudents.length?trainingStudents.map((student,index)=>'<label class="student-card" data-student-card-id="'+student.id+'"><span class="student-index">'+String(index+1).padStart(2,'0')+'</span><span class="student-name"><strong>'+escapeHtml(student.name)+'</strong><span>'+escapeHtml(student.role||'队员')+' · 待计时</span></span><input class="score-input" data-student-id="'+student.id+'" inputmode="decimal" type="number" min="0" step="0.1" placeholder="秒" aria-label="'+escapeHtml(student.name)+'秒"></label>').join(''):empty;
+      document.querySelector('[data-results="field"]').innerHTML=trainingStudents.length?'<label class="lineup-score-card"><span class="student-index">队</span><span class="student-name team-meta"><strong>本轮团队得分</strong><span class="lineup-names" data-field-lineup>尚未选择本轮上场队员</span></span><input class="score-input" data-field-score inputmode="numeric" type="number" min="0" step="1" placeholder="分" aria-label="本轮团队得分"></label>':empty;
+      document.querySelectorAll('[data-student-card-id]').forEach(card=>card.addEventListener('click',()=>selectTrainingStudent(card.dataset.studentCardId)));
+      document.querySelectorAll('[data-results] .score-input').forEach(input=>input.addEventListener('input',()=>{if(input.dataset.studentId&&input.dataset.studentId!==selectedTrainingStudentId&&!segmentTick&&!fieldTick&&!fieldPreTick){selectedTrainingStudentId=input.dataset.studentId;updateSelectedTrainingStudent()}updateTrainingSummary()}));updateSelectedTrainingStudent();updateTrainingSummary();
     }
     async function loadTrainingStudents(){
       const teamId=document.querySelector('#training-team-select').value;
-      if(!teamId){trainingStudents=[];renderTrainingStudents();return}
-      try{trainingStudents=await sbFetch('/rest/v1/students_v2?team_id=eq.'+encodeURIComponent(teamId)+'&deleted_at=is.null&is_active=eq.true&select=id,name,role&order=name.asc');renderTrainingStudents()}catch(error){trainingStudents=[];renderTrainingStudents();showToast(error.message)}
+      loadTrainingContext();
+      if(!teamId){trainingStudents=[];selectedTrainingStudentId='';fieldParticipantIds=[];renderTrainingStudents();return}
+      try{trainingStudents=await sbFetch('/rest/v1/students_v2?team_id=eq.'+encodeURIComponent(teamId)+'&deleted_at=is.null&is_active=eq.true&select=id,name,role&order=name.asc');if(!trainingStudents.some(student=>student.id===selectedTrainingStudentId))selectedTrainingStudentId=trainingStudents[0]?.id||'';fieldParticipantIds=[];renderTrainingStudents()}catch(error){trainingStudents=[];selectedTrainingStudentId='';fieldParticipantIds=[];renderTrainingStudents();showToast(error.message)}
     }
     function updateTrainingSummary(){
       const values=[...document.querySelector('[data-results="'+trainingMode+'"]').querySelectorAll('.score-input')].map(input=>Number(input.value)).filter(value=>Number.isFinite(value)&&value>=0);
       document.querySelector('#summary-value').textContent=values.length?(trainingMode==='segment'?Math.min(...values).toFixed(1)+' 秒':Math.max(...values)+' 分'):'—';
     }
     document.querySelector('#training-team-select').addEventListener('change',loadTrainingStudents);
+    document.querySelectorAll('#training-title-input,#training-content-input').forEach(input=>input.addEventListener('input',saveTrainingContext));
+    document.querySelector('#clear-training-context').addEventListener('click',()=>{document.querySelector('#training-title-input').value='';document.querySelector('#training-content-input').value='';saveTrainingContext();document.querySelector('#training-content-input').focus();showToast('本队训练内容已清空')});
+    let timerSoundEnabled=localStorage.getItem('vex_timer_sound')!=='off',timerAudioContext=null;
+    function syncTimerSoundButton(){const button=document.querySelector('#timer-sound-toggle');button.textContent=timerSoundEnabled?'声音开启':'声音关闭';button.setAttribute('aria-pressed',String(timerSoundEnabled))}
+    function unlockTimerAudio(){if(!timerSoundEnabled)return;const AudioContextClass=window.AudioContext||window.webkitAudioContext;if(!AudioContextClass)return;if(!timerAudioContext)timerAudioContext=new AudioContextClass();if(timerAudioContext.state==='suspended')timerAudioContext.resume()}
+    function playTimerCue(type){
+      if(!timerSoundEnabled)return;unlockTimerAudio();if(!timerAudioContext)return;
+      const patterns={matchStart:[[620,0,.24,.5],[780,.28,.24,.54],[980,.56,.7,.62]],switchStart:[[920,0,.72,.65]],switchEnd:[[900,0,.46,.65],[700,.58,.58,.68]],finish:[[520,0,.38,.64],[520,.48,.38,.64],[360,.96,1.15,.7]]},pattern=patterns[type]||[],compressor=timerAudioContext.createDynamicsCompressor();compressor.threshold.value=-18;compressor.knee.value=12;compressor.ratio.value=8;compressor.attack.value=.003;compressor.release.value=.2;compressor.connect(timerAudioContext.destination);
+      pattern.forEach(([frequency,delay,duration,volume])=>{const gain=timerAudioContext.createGain(),primary=timerAudioContext.createOscillator(),body=timerAudioContext.createOscillator(),start=timerAudioContext.currentTime+delay;primary.type='square';primary.frequency.setValueAtTime(frequency,start);body.type='sine';body.frequency.setValueAtTime(frequency/2,start);gain.gain.setValueAtTime(.0001,start);gain.gain.linearRampToValueAtTime(volume,start+.018);gain.gain.setValueAtTime(volume,start+Math.max(.03,duration-.08));gain.gain.exponentialRampToValueAtTime(.0001,start+duration);primary.connect(gain);body.connect(gain);gain.connect(compressor);primary.start(start);body.start(start);primary.stop(start+duration+.04);body.stop(start+duration+.04)});
+      if(navigator.vibrate){const vibration={matchStart:[120,80,120,80,280],switchStart:[500],switchEnd:[300,180,420],finish:[280,150,280,150,700]}[type];if(vibration)navigator.vibrate(vibration)}
+    }
+    document.querySelector('#timer-sound-toggle').addEventListener('click',()=>{timerSoundEnabled=!timerSoundEnabled;localStorage.setItem('vex_timer_sound',timerSoundEnabled?'on':'off');syncTimerSoundButton();if(timerSoundEnabled){unlockTimerAudio();playTimerCue('switchStart')}});syncTimerSoundButton();
     function formatElapsed(ms){const total=Math.floor(ms/100),min=Math.floor(total/600),sec=Math.floor(total/10)%60,tenth=total%10;return String(min).padStart(2,'0')+':'+String(sec).padStart(2,'0')+'.'+tenth}
     document.querySelector('[data-timer-start="segment"]').addEventListener('click',e=>{
-      if(segmentTick){clearInterval(segmentTick);segmentTick=null;segmentElapsed=Date.now()-segmentStarted;document.querySelector('[data-segment-label]').textContent='已停止，可保存用时';e.currentTarget.textContent='继续计时';const empty=[...document.querySelectorAll('[data-results="segment"] .score-input')].find(input=>!input.value);if(empty){empty.value=(segmentElapsed/1000).toFixed(1);empty.dispatchEvent(new Event('input'))}return}
+      if(segmentTick){clearInterval(segmentTick);segmentTick=null;segmentElapsed=Date.now()-segmentStarted;document.querySelector('[data-segment-label]').textContent='已停止，可保存用时';e.currentTarget.textContent='继续计时';const selected=document.querySelector('[data-results="segment"] .score-input[data-student-id="'+selectedTrainingStudentId+'"]');if(selected){selected.value=(segmentElapsed/1000).toFixed(1);selected.dispatchEvent(new Event('input'))}return}
+      if(!selectedTrainingStudentId)return showToast('请先选择本次计时队员');
       segmentStarted=Date.now()-segmentElapsed;segmentTick=setInterval(()=>segmentTime.textContent=formatElapsed(Date.now()-segmentStarted),100);document.querySelector('[data-segment-label]').textContent='计时中';e.currentTarget.textContent='停止计时';
     });
     document.querySelector('[data-timer-reset="segment"]').addEventListener('click',()=>{clearInterval(segmentTick);segmentTick=null;segmentElapsed=0;segmentTime.textContent='00:00.0';document.querySelector('[data-segment-label]').textContent='准备开始';document.querySelector('[data-timer-start="segment"]').textContent='开始计时'});
+    function startFieldClock(button){
+      document.querySelector('[data-field-label]').textContent='全场训练进行中';button.textContent='暂停';button.disabled=false;
+      fieldTick=setInterval(()=>{fieldLeft--;fieldTime.textContent='00:'+String(fieldLeft).padStart(2,'0');if(fieldLeft===35)playTimerCue('switchStart');if(fieldLeft===25)playTimerCue('switchEnd');if(fieldLeft<=0){playTimerCue('finish');clearInterval(fieldTick);fieldTick=null;document.querySelector('[data-field-label]').textContent='时间到，请录入团队得分';button.textContent='重新开始';const score=document.querySelector('[data-field-score]');score?.focus();score?.scrollIntoView({behavior:'smooth',block:'center'})}},1000);
+    }
     document.querySelector('[data-timer-start="field"]').addEventListener('click',e=>{
-      if(fieldTick){clearInterval(fieldTick);fieldTick=null;document.querySelector('[data-field-label]').textContent='已暂停';e.currentTarget.textContent='继续倒计时';return}
-      if(fieldLeft<=0)fieldLeft=60;
-      document.querySelector('[data-field-label]').textContent='全场训练进行中';e.currentTarget.textContent='暂停';
-      fieldTick=setInterval(()=>{fieldLeft--;fieldTime.textContent='00:'+String(fieldLeft).padStart(2,'0');if(fieldLeft<=0){clearInterval(fieldTick);fieldTick=null;document.querySelector('[data-field-label]').textContent='时间到，请录入得分';e.currentTarget.textContent='重新开始'}},1000);
+      const button=e.currentTarget;
+      if(fieldTick){clearInterval(fieldTick);fieldTick=null;document.querySelector('[data-field-label]').textContent='已暂停';button.textContent='继续倒计时';return}
+      if(fieldPreTick)return;
+      if(!fieldParticipantIds.length)return showToast('请先选择本轮上场队员');
+      unlockTimerAudio();
+      if(fieldLeft>0&&fieldLeft<60)return startFieldClock(button);
+      fieldLeft=60;let readyCount=3;button.disabled=true;button.textContent='准备中…';fieldTime.textContent=String(readyCount);document.querySelector('[data-field-label]').textContent='比赛即将开始';
+      fieldPreTick=setInterval(()=>{readyCount--;if(readyCount>0){fieldTime.textContent=String(readyCount);return}clearInterval(fieldPreTick);fieldPreTick=null;fieldTime.textContent='01:00';playTimerCue('matchStart');startFieldClock(button)},1000);
     });
-    document.querySelector('[data-timer-reset="field"]').addEventListener('click',()=>{clearInterval(fieldTick);fieldTick=null;fieldLeft=60;fieldTime.textContent='01:00';document.querySelector('[data-field-label]').textContent='倒计时准备';document.querySelector('[data-timer-start="field"]').textContent='开始 60 秒'});
+    document.querySelector('[data-timer-reset="field"]').addEventListener('click',()=>{clearInterval(fieldTick);clearInterval(fieldPreTick);fieldTick=null;fieldPreTick=null;fieldLeft=60;fieldTime.textContent='01:00';document.querySelector('[data-field-label]').textContent='倒计时准备';const button=document.querySelector('[data-timer-start="field"]');button.disabled=false;button.textContent='开始 60 秒'});
     async function saveTrainingRound(button){
       const teamId=document.querySelector('#training-team-select').value,title=document.querySelector('#training-title-input').value.trim(),content=document.querySelector('#training-content-input').value.trim();
-      const inputs=[...document.querySelector('[data-results="'+trainingMode+'"]').querySelectorAll('.score-input')],records=inputs.filter(input=>input.value!=='').map(input=>({student_id:input.dataset.studentId,value:Number(input.value)}));
-      if(!teamId)return showToast('请先选择赛队');if(!records.length)return showToast('请至少录入一名队员的数据');if(records.some(record=>!Number.isFinite(record.value)||record.value<0))return showToast('请检查录入的数据');
+      const participantIds=trainingMode==='segment'?[selectedTrainingStudentId]:fieldParticipantIds,selectedInput=trainingMode==='segment'?document.querySelector('[data-results="segment"] .score-input[data-student-id="'+selectedTrainingStudentId+'"]'):document.querySelector('[data-field-score]'),records=selectedInput&&selectedInput.value!==''?[{student_id:participantIds[0],value:Number(selectedInput.value)}]:[];
+      if(!teamId)return showToast('请先选择赛队');if(!participantIds.length)return showToast(trainingMode==='segment'?'请先选择本轮队员':'请先选择本轮上场阵容');if(!records.length)return showToast(trainingMode==='segment'?'请录入当前队员的数据':'请录入本轮团队得分');if(records.some(record=>!Number.isFinite(record.value)||record.value<0))return showToast('请检查录入的数据');
       button.disabled=true;button.textContent='正在保存…';
       try{
+        saveTrainingContext();
         const sessions=await sbFetch('/rest/v1/training_sessions',{method:'POST',body:{team_id:teamId,title:title||(trainingMode==='segment'?'分段训练':'全场训练'),training_content:content||null,notes:trainingMode==='segment'?'计时模式':'60秒计分模式',started_at:new Date().toISOString(),ended_at:new Date().toISOString(),created_by:currentProfile.id},headers:{Prefer:'return=representation'}}),session=sessions[0];
-        await sbFetch('/rest/v1/training_records_v2',{method:'POST',body:records.map(record=>({session_id:session.id,team_id:teamId,student_id:record.student_id,round:1,value_seconds:trainingMode==='segment'?record.value:null,value_score:trainingMode==='field'?record.value:null,record_data:{mode:trainingMode==='segment'?'timer':'score',duration_limit_seconds:trainingMode==='field'?60:null},created_by:currentProfile.id})),headers:{Prefer:'return=minimal'}});
-        inputs.forEach(input=>input.value='');updateTrainingSummary();await loadDashboard();showToast('本轮已保存并同步');
+        if(trainingMode==='segment')await sbFetch('/rest/v1/training_records_v2',{method:'POST',body:records.map(record=>({session_id:session.id,team_id:teamId,student_id:record.student_id,round:1,value_seconds:record.value,value_score:null,record_data:{mode:'timer',duration_limit_seconds:null,participant_ids:participantIds},created_by:currentProfile.id})),headers:{Prefer:'return=minimal'}});
+        else await sbFetch('/rest/v1/rpc/create_field_training_record',{method:'POST',body:{p_session_id:session.id,p_team_id:teamId,p_score:records[0].value,p_participant_ids:participantIds,p_created_by:currentProfile.id,p_round:1}});
+        selectedInput.value='';updateTrainingSummary();if(trainingMode==='segment')document.querySelector('[data-timer-reset="segment"]').click();else document.querySelector('[data-timer-reset="field"]').click();await loadDashboard();const names=trainingStudents.filter(student=>participantIds.includes(student.id)).map(student=>student.name).join('＋');showToast('已保存 '+names+' 的本轮数据');
       }catch(error){showToast('保存失败：'+error.message)}finally{button.disabled=false;button.textContent='保存本轮'}
     }
     function exportReportPdf(){
@@ -529,14 +601,16 @@
       const labels=isTimer?['最快用时 / 秒','最慢用时 / 秒','平均用时 / 秒']:['最高得分 / 分','最低得分 / 分','平均得分 / 分'];['best','worst','average'].forEach((key,index)=>document.querySelector('#metric-'+key+'-label').textContent=labels[index]);
       if(!teamId||(reportScope==='student'&&!studentId))return setReportEmpty('请选择要查看的'+(reportScope==='student'?'学生':'赛队')+'。');
       try{
-        let path='/rest/v1/training_records_v2?team_id=eq.'+encodeURIComponent(teamId)+'&deleted_at=is.null&'+(isTimer?'value_seconds=not.is.null':'value_score=not.is.null')+'&select=id,student_id,value_seconds,value_score,created_at&order=created_at.asc';if(reportScope==='student')path+='&student_id=eq.'+encodeURIComponent(studentId);
-        const records=await sbFetch(path);if(!records.length)return setReportEmpty('当前筛选条件下暂无训练记录。');
+        let participantRows=[],path='/rest/v1/training_records_v2?team_id=eq.'+encodeURIComponent(teamId)+'&deleted_at=is.null&'+(isTimer?'value_seconds=not.is.null':'value_score=not.is.null')+'&select=id,student_id,value_seconds,value_score,created_at&order=created_at.asc';
+        if(reportScope==='student'&&isTimer)path+='&student_id=eq.'+encodeURIComponent(studentId);
+        let records=await sbFetch(path);if(!records.length)return setReportEmpty('当前筛选条件下暂无训练记录。');
+        if(!isTimer){participantRows=await sbFetch('/rest/v1/training_record_participants?record_id=in.('+records.map(record=>record.id).join(',')+')&select=record_id,student_id');if(reportScope==='student')records=records.filter(record=>participantRows.some(link=>link.record_id===record.id&&link.student_id===studentId)||(!participantRows.some(link=>link.record_id===record.id)&&record.student_id===studentId));if(!records.length)return setReportEmpty('当前筛选条件下暂无训练记录。')}
         const values=records.map(record=>Number(isTimer?record.value_seconds:record.value_score)),best=isTimer?Math.min(...values):Math.max(...values),worst=isTimer?Math.max(...values):Math.min(...values),average=values.reduce((sum,value)=>sum+value,0)/values.length,format=value=>Number(value.toFixed(1));
         document.querySelector('#metric-best').textContent=format(best);document.querySelector('#metric-worst').textContent=format(worst);document.querySelector('#metric-average').textContent=format(average);document.querySelector('#report-description').textContent='共记录 '+records.length+' 条有效训练数据，统计结果已从云端同步。';
         const first=values[0],last=values[values.length-1],change=isTimer?first-last:last-first;document.querySelector('#report-trend').textContent=change>0?'进步 '+format(change)+(isTimer?' 秒':' 分'):change<0?'回落 '+format(Math.abs(change))+(isTimer?' 秒':' 分'):'保持稳定';
         const recent=records.slice(-8),max=Math.max(...recent.map(record=>Number(isTimer?record.value_seconds:record.value_score)),1);document.querySelector('#report-chart').innerHTML=recent.map(record=>{const value=Number(isTimer?record.value_seconds:record.value_score),date=new Date(record.created_at),isBest=value===best;return '<div class="bar-item"><span class="bar-value">'+format(value)+'</span><span class="bar '+(isBest?'best':'')+'" style="--h:'+Math.max(8,value/max*88)+'%"></span><span class="bar-label">'+(date.getMonth()+1)+'/'+date.getDate()+'</span></div>'}).join('');
         document.querySelector('#report-note').textContent=isTimer?'柱状图展示最近记录；用时越短越好，当前最快为 '+format(best)+' 秒。':'柱状图展示最近记录；得分越高越好，当前最高为 '+format(best)+' 分。';
-        const grouped={};records.forEach(record=>(grouped[record.student_id]??=[]).push(Number(isTimer?record.value_seconds:record.value_score)));document.querySelector('[data-team-ranking]').innerHTML=Object.entries(grouped).map(([id,list],index)=>{const item=reportStudents.find(student=>student.id===id),itemBest=isTimer?Math.min(...list):Math.max(...list),itemAvg=list.reduce((sum,value)=>sum+value,0)/list.length;return '<div class="history-row"><span class="student-index">'+String(index+1).padStart(2,'0')+'</span><span class="team-meta"><strong>'+escapeHtml(item?.name||'队员')+'</strong><span>'+(isTimer?'最快 ':'最高 ')+format(itemBest)+' · 平均 '+format(itemAvg)+(isTimer?' 秒':' 分')+'</span></span><span class="pill">'+list.length+' 次</span></div>'}).join('');
+        const grouped={};if(isTimer)records.forEach(record=>(grouped[record.student_id]??=[]).push(Number(record.value_seconds)));else{const recordMap=Object.fromEntries(records.map(record=>[record.id,record]));participantRows.forEach(link=>{const record=recordMap[link.record_id];if(record)(grouped[link.student_id]??=[]).push(Number(record.value_score))});records.filter(record=>!participantRows.some(link=>link.record_id===record.id)).forEach(record=>(grouped[record.student_id]??=[]).push(Number(record.value_score)))}document.querySelector('[data-team-ranking]').innerHTML=Object.entries(grouped).map(([id,list],index)=>{const item=reportStudents.find(student=>student.id===id),itemBest=isTimer?Math.min(...list):Math.max(...list),itemAvg=list.reduce((sum,value)=>sum+value,0)/list.length;return '<div class="history-row"><span class="student-index">'+String(index+1).padStart(2,'0')+'</span><span class="team-meta"><strong>'+escapeHtml(item?.name||'队员')+'</strong><span>'+(isTimer?'最快 ':'最高 ')+format(itemBest)+' · 平均 '+format(itemAvg)+(isTimer?' 秒':' 分')+'</span></span><span class="pill">'+list.length+' 次</span></div>'}).join('');
       }catch(error){setReportEmpty('报告读取失败：'+error.message)}
     }
     document.querySelectorAll('[data-report-mode]').forEach(button=>button.addEventListener('click',async()=>{reportScope=button.dataset.reportMode;document.querySelectorAll('[data-report-mode]').forEach(item=>item.classList.toggle('active',item===button));document.querySelector('#report-student-select').hidden=reportScope!=='student';await loadReportStudents();await loadReportData()}));
